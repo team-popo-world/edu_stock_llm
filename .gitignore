@@ -21,3 +21,6 @@ src/visualization/__pycache__/
 
 # 게임 데이터
 data/
+
+# 시각화 결과
+visualization_results/
