@@ -1,155 +1,145 @@
 # 아기돼지 삼형제 주식회사 투자 시뮬레이션
 
-## 프로젝트 소개
+LLM을 활용한 주식 투자 시나리오 생성 및 시뮬레이션 교육용 프로젝트입니다. OpenAI의 GPT 모델과 LangChain을 사용하여 동적으로 게임 시나리오를 만들고, 다양한 투자 전략을 시뮬레이션하며, FastAPI를 통해 API를 제공합니다.
 
-이 프로젝트는 '아기돼지 삼형제 주식회사' 투자 시뮬레이션 게임입니다. OpenAI의 LLM(Large Language Model)을 활용하여 게임 시나리오를 생성하고, 투자 시뮬레이션을 수행합니다. 게임은 아기돼지 삼형제의 집(첫째집-지푸라기, 둘째집-나무, 셋째집-벽돌)을 주식으로 간주하고, 다양한 사건(태풍 등)에 따른 가치 변동을 시뮬레이션합니다.
+## 주요 기능
 
-## 개선사항 (2025년 5월 21일)
+*   LLM (OpenAI GPT 모델) 기반 동적 게임 시나리오 생성
+*   다양한 자동 투자 전략 시뮬레이션 (랜덤, 보수적, 공격적, 추세 추종)
+*   인터랙티브 투자 시뮬레이션 모드 (CLI)
+*   FastAPI를 이용한 웹 API 제공 (시나리오 생성, 조회, 시뮬레이션 실행)
+*   명령줄 인터페이스 (CLI) 제공
+*   Matplotlib을 이용한 주가 변동 및 시뮬레이션 결과 시각화 (CLI)
+*   Jupyter Notebook (`notebook/langchain.ipynb`)을 통한 개발 및 테스트 환경 제공
 
-### 버그 수정 및 안정성 향상
-- **JSON 파싱 오류 개선**
-  - LLM 응답에서 코드 블록 마크다운 자동 제거 기능 개선
-  - 여러 정규표현식 패턴을 사용한 고급 JSON 추출 로직 구현
-  - 상세한 오류 메시지로 디버깅 용이성 향상
+## 사용 기술
 
-- **누락된 데이터 필드 대응**
-  - 모든 모듈에서 불완전한 데이터 구조를 안전하게 처리
-  - 필드 존재 여부 검사 (`dict.get()` 메소드 활용)
-  - 누락된 데이터에 대한 적절한 기본값 제공
-
-- **시각화 모듈 전체 개선**
-  - 코드 중복 제거 및 모듈화 (`_prepare_stock_data`, `_create_stock_plot` 등)
-  - 한글 폰트 문제 해결 (영어 라벨로 일관성 있게 대체)
-  - 새로운 투자 결과 시각화 기능 (`create_investment_summary`) 추가
-  - 데이터 비일관성 안전하게 처리 (누락된 주식 정보 등)
-
-- **시뮬레이션 모듈 안정성 향상**
-  - 다음 턴 접근 로직 개선 (인덱스 오류 방지)
-  - 결과 기록 시 안전한 필드 처리
-
-- **결과 처리 개선**
-  - 유효한 시뮬레이션 결과만 처리하는 필터링 단계 추가
-  - 전략 비교 로직 안전성 향상
-
-## 설치 및 실행 방법
-
-1. 필요한 패키지 설치:
-```bash
-pip install python-dotenv langchain-openai langchain matplotlib pandas numpy
-```
-
-2. 환경 변수 설정:
-- 프로젝트 루트에 `.env` 파일을 생성하고 OpenAI API 키 추가:
-```
-OPENAI_API_KEY=your_api_key_here
-```
-
-3. 실행:
-```bash
-# 기본 실행 (데이터 생성, 시각화, 시뮬레이션)
-python -m src.main --visualize --simulate
-
-# 시각화 결과 저장
-python -m src.main --visualize --save-viz
-
-# 기존 데이터 사용
-python -m src.main --use-existing --input-file ./data/game_scenario.json --visualize --simulate
-
-# 자동화된 시뮬레이션 실행
-python -m src.main --use-existing --input-file ./data/game_scenario.json --simulate --auto-sim
-```
-
-## 명령행 인자
-
-| 인자 | 설명 |
-|------|------|
-| `--use-existing` | 기존 JSON 파일 사용 |
-| `--input-file PATH` | 사용할 기존 JSON 파일 경로 |
-| `--output-file NAME` | 생성된 데이터를 저장할 파일 이름 |
-| `--visualize` | 데이터 시각화 수행 |
-| `--save-viz` | 시각화 결과 저장 |
-| `--simulate` | 시뮬레이션 실행 |
-| `--auto-sim` | 자동화된 시뮬레이션 실행 |
+*   Python 3.x
+*   FastAPI: API 개발
+*   Uvicorn: ASGI 서버
+*   LangChain & LangChain-OpenAI: LLM 연동 및 프롬프트 관리
+*   OpenAI API (gpt-4o-mini 또는 유사 모델)
+*   Pydantic: 데이터 유효성 검사 및 설정 관리
+*   Matplotlib: 데이터 시각화
+*   python-dotenv: 환경 변수 관리
 
 ## 프로젝트 구조
 
 ```
-/src
-  ├── __init__.py
-  ├── main.py            # 메인 실행 파일
-  ├── data/              # 데이터 처리 관련
-  │   ├── __init__.py
-  │   └── data_handler.py
-  ├── models/            # LLM 모델 관련
-  │   ├── __init__.py
-  │   └── llm_handler.py
-  ├── utils/             # 유틸리티 함수
-  │   ├── __init__.py
-  │   ├── config.py
-  │   └── prompts.py
-  ├── visualization/     # 시각화 기능
-  │   ├── __init__.py
-  │   └── visualize.py
-  └── simulation/        # 시뮬레이션 기능
-      ├── __init__.py
-      └── simulator.py
+edu_stock_llm/
+├── .env                  # 환경 변수 파일 (OpenAI API 키 등) - 직접 생성 필요
+├── .gitignore            # Git 무시 파일 목록
+├── README.md             # 프로젝트 설명 파일
+├── requirements.txt      # 프로젝트 의존성 패키지 목록
+├── data/                 # 생성된 게임 시나리오 JSON 파일 저장 (자동 생성)
+├── notebook/
+│   └── langchain.ipynb   # LLM 테스트 및 개발용 Jupyter Notebook
+├── src/                  # 주요 소스 코드
+│   ├── __init__.py
+│   ├── api.py            # FastAPI 웹 API 정의
+│   ├── main.py           # CLI 애플리케이션 실행 로직
+│   ├── data/
+│   │   └── data_handler.py # 데이터 파싱, 저장, 로드
+│   ├── models/
+│   │   └── llm_handler.py  # LLM 연동 및 게임 데이터 생성
+│   ├── simulation/
+│   │   └── simulator.py    # 투자 시뮬레이션 로직
+│   ├── utils/
+│   │   ├── config.py     # API 키 로드, 모델 설정
+│   │   └── prompts.py    # LLM 프롬프트 정의
+│   └── visualization/
+│       └── visualize.py    # 데이터 시각화
+└── visualization_results/  # 시각화 결과 이미지 저장 (자동 생성)
 ```
 
-## 데이터 구조
+## 설치 및 실행 방법
 
-아래는 이 프로젝트에서 사용하는 기본 데이터 구조입니다:
+### 1. 프로젝트 클론
 
-```json
-[
-  {
-    "turn_number": 1,
-    "news": "이번 주 날씨는 맑음! 첫째 돼지의 지푸라기 집이 빠르게 완성되어 인기가 치솟고 있어요!",
-    "event_description": "없음",
-    "stocks": [
-      {
-        "name": "첫째집",
-        "description": "지푸라기 집, 빠른 완공, 인기도 높으나 리스크 큼.",
-        "initial_value": 100,
-        "current_value": 108,
-        "risk_level": "고위험 고수익"
-      },
-      {
-        "name": "둘째집",
-        "description": "나무 집, 중간 정도의 안정성과 속도.",
-        "initial_value": 100,
-        "current_value": 100,
-        "risk_level": "균형형"
-      },
-      {
-        "name": "셋째집",
-        "description": "벽돌 집, 느리지만 안정성 최고.",
-        "initial_value": 100,
-        "current_value": 100,
-        "risk_level": "장기 투자 적합"
-      }
-    ]
-  }
-]
+```bash
+git clone <레포지토리_URL>
+cd edu_stock_llm
 ```
 
-## 오류 처리 전략
+### 2. 가상 환경 생성 및 활성화 (권장)
 
-이 프로젝트는 다음과 같은 오류 처리 전략을 구현합니다:
+```bash
+python -m venv .venv
+# macOS / Linux
+source .venv/bin/activate
+# Windows
+# .venv\Scripts\activate
+```
 
-- **데이터 누락 보호**: 모든 딕셔너리 접근은 `dict.get()` 메소드를 사용하여 KeyError 방지
-- **JSON 파싱 복원력**: 여러 정규표현식 패턴을 통한 JSON 추출 시도
-- **로버스트 시각화**: 누락된 데이터에 대해 자동으로 이전 값이나 기본값 사용
-- **점진적 재시도**: LLM 응답 실패 시 최대 3회 재시도
-- **폴백 메커니즘**: 모든 생성 시도 실패 시 샘플 데이터 사용 옵션 제공
-- **사용자 친화적 오류**: 상세한 오류 메시지로 원인 파악 용이
+### 3. 의존성 패키지 설치
 
-## 문제해결
+```bash
+pip install -r requirements.txt
+```
 
-- **JSON 파싱 오류**: LLM이 완전한 JSON 형식으로 응답하지 않을 경우 최대 3회 재시도합니다. 그래도 실패할 경우 샘플 데이터 사용 여부를 묻습니다.
-- **한글 폰트 오류**: 시각화에서 한글 폰트 관련 오류가 발생할 경우 영어 라벨이 자동으로 사용됩니다.
-- **API 키 오류**: `.env` 파일이 없거나 API 키가 잘못된 경우 적절한 오류 메시지가 표시됩니다.
-- **불완전한 데이터**: 필수 필드가 누락된 경우에도 프로그램이 안전하게 실행됩니다.
+### 4. `.env` 파일 설정
 
-## 라이선스
+프로젝트 루트 디렉토리에 `.env` 파일을 생성하고, OpenAI API 키를 입력합니다.
 
-이 프로젝트는 MIT 라이선스를 따릅니다.
+```env
+// filepath: /Users/hyunjong/Desktop/KHJ/toss/edu_stock_llm/.env
+OPENAI_API_KEY="sk-your-openai-api-key"
+```
+**주의**: 실제 API 키를 사용하세요. 위 키는 예시입니다.
+
+### 5. 실행 방법
+
+#### A. 명령줄 인터페이스 (CLI)
+
+프로젝트 루트 디렉토리에서 다음 명령어를 사용하여 CLI 애플리케이션을 실행할 수 있습니다.
+
+*   **도움말 확인**:
+    ```bash
+    python -m src.main --help
+    ```
+*   **새 시나리오 생성, 시각화, 자동 시뮬레이션 실행**:
+    ```bash
+    python -m src.main --visualize --simulate --auto-sim
+    ```
+    *   데이터는 `data/` 폴더에 `game_scenario_YYYYMMDD_HHMMSS.json` 형식으로 저장됩니다.
+    *   시각화 결과는 `visualization_results/` 폴더에 저장될 수 있습니다 (`--save-viz` 옵션 사용 시).
+*   **기존 시나리오 파일 사용**:
+    ```bash
+    python -m src.main --use-existing --input-file data/your_scenario_file.json --visualize --simulate
+    ```
+
+#### B. 웹 API (FastAPI)
+
+프로젝트 루트 디렉토리에서 다음 명령어를 사용하여 FastAPI 서버를 실행합니다.
+
+```bash
+uvicorn src.api:app --reload --host 0.0.0.0 --port 8000
+```
+
+서버가 실행되면 다음 주소로 접속하여 API 문서를 확인할 수 있습니다:
+
+*   Swagger UI: `http://localhost:8000/docs`
+*   ReDoc: `http://localhost:8000/redoc`
+
+**주요 API 엔드포인트**:
+
+*   `POST /scenario/generate`: 새로운 게임 시나리오를 생성합니다.
+*   `GET /scenario/{scenario_id}`: 특정 ID의 게임 시나리오를 조회합니다.
+*   `POST /simulation/run_automated`: 주어진 시나리오와 전략으로 자동 투자 시뮬레이션을 실행합니다.
+*   `GET /scenarios`: 저장된 모든 시나리오 파일 목록을 조회합니다.
+
+#### C. Jupyter Notebook
+
+LLM 연동, 프롬프트 테스트, 데이터 생성 및 기본 시각화 로직을 실험해볼 수 있습니다.
+
+1.  Jupyter Notebook 또는 JupyterLab을 실행합니다.
+    ```bash
+    jupyter notebook
+    # 또는
+    jupyter lab
+    ```
+2.  `notebook/langchain.ipynb` 파일을 열고 셀을 순차적으로 실행합니다.
+
+## 기여
+
+버그 수정이나 기능 개선에 대한 기여를 환영합니다. 이슈를 생성하거나 풀 리퀘스트를 보내주세요.
