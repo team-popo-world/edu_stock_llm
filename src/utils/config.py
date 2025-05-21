@@ -28,6 +28,6 @@ def get_model_settings():
     """
     return {
         "model_name": "gpt-4o-mini",
-        "temperature": 0.3,  # 일관된 결과를 위해 temperature=0 사용
+        "temperature": 0.3,  # 약간의 창의성을 위해 0.3으로 설정
         "max_tokens": 4096
     }
