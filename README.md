@@ -82,7 +82,7 @@ pip install -r requirements.txt
 프로젝트 루트 디렉토리에 `.env` 파일을 생성하고, OpenAI API 키를 입력합니다.
 
 ```env
-// filepath: /Users/hyunjong/Desktop/KHJ/toss/edu_stock_llm/.env
+// filepath: /edu_stock_llm/.env
 OPENAI_API_KEY="sk-your-openai-api-key"
 ```
 **주의**: 실제 API 키를 사용하세요. 위 키는 예시입니다.
