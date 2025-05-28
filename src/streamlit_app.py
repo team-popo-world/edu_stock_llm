@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.express as px
 from datetime import datetime
@@ -11,13 +10,139 @@ from src.utils.prompts import get_system_prompt, get_game_scenario_prompt
 from src.simulation.simulator import run_automated_simulation
 from src.utils.config import load_api_key
 
-# --- Helper Functions ---
+# 페이지 설정
+st.set_page_config(
+    page_title="EduStock",
+    page_icon="📈",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
+
+# CSS 스타일링 - 미니멀 디자인
+st.markdown("""
+<style>
+    /* 메인 컨테이너 */
+    .main > div {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    
+    /* 헤더 스타일 */
+    .main-header {
+        text-align: center;
+        padding: 2rem 0;
+        margin-bottom: 3rem;
+    }
+    
+    /* 카드 스타일 */
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+        margin: 1rem 0;
+    }
+    
+    /* 버튼 스타일 */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 2rem;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* 메트릭 카드 */
+    .metric-card {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        margin: 0.5rem 0;
+    }
+    
+    /* 주식 카드 */
+    .stock-card {
+        background: white;
+        border: 2px solid #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        transition: all 0.3s ease;
+    }
+    
+    .stock-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* 성공 메시지 */
+    .success-message {
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+    
+    /* 뉴스 카드 */
+    .news-card {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+    
+    /* 스텝 인디케이터 */
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin: 2rem 0;
+    }
+    
+    .step {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 0.5rem;
+        font-weight: bold;
+    }
+    
+    .step.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .step.completed {
+        background: #28a745;
+        color: white;
+    }
+    
+    /* 숨기기 */
+    .stDeployButton {display:none;}
+    footer {visibility: hidden;}
+    .stApp > header {visibility: hidden;}
+</style>
+""", unsafe_allow_html=True)
+
+# 유틸리티 함수들
 def create_simple_stock_plot(game_data, title="주식 가치 변화"):
-    """Create a simple interactive plot for stock data"""
+    """간단하고 깔끔한 주식 차트 생성"""
     if not game_data:
         return None
     
-    # Prepare data for plotting
     turns = []
     stock_data = {}
     
@@ -34,10 +159,9 @@ def create_simple_stock_plot(game_data, title="주식 가치 변화"):
                     stock_data[stock_name] = []
                 stock_data[stock_name].append(stock_value)
     
-    # Create plotly figure
     fig = go.Figure()
     
-    colors = ['gold', 'brown', 'firebrick', 'blue', 'green']
+    colors = ['#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a']
     for i, (stock_name, values) in enumerate(stock_data.items()):
         color = colors[i % len(colors)]
         fig.add_trace(go.Scatter(
@@ -55,34 +179,22 @@ def create_simple_stock_plot(game_data, title="주식 가치 변화"):
         yaxis_title="가치 (코인)",
         hovermode='x unified',
         template='plotly_white',
-        height=500
+        height=400,
+        font=dict(family="Arial, sans-serif", size=12)
     )
     
     return fig
 
-def round_currency(amount):
-    """Round currency amounts to avoid floating point precision issues"""
-    return round(amount, 2)
-
-# --- Page Configuration ---
-st.set_page_config(
-    page_title="EduStock LLM Game",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# --- Constants ---
+# 데이터 디렉토리 설정
 DATA_DIR = "data"
 VISUALIZATION_DIR = "visualization_results"
 DEFAULT_SCENARIO_TYPE = "magic_kingdom"
 SCENARIO_TYPES = {
-    "마법 왕국 🏰": "magic_kingdom",
-    "푸드트럭 왕국 🚚": "foodtruck_kingdom",
-    "달빛 도둑 🌙": "moonlight_thief"
+    "🏰 마법 왕국": "magic_kingdom",
+    "🚚 푸드트럭 왕국": "foodtruck_kingdom", 
+    "🌙 달빛 도둑": "moonlight_thief"
 }
 
-# --- Helper Functions ---
 def ensure_dir(directory_path):
     if not os.path.exists(directory_path):
         os.makedirs(directory_path)
@@ -97,525 +209,534 @@ def generate_filename(scenario_type, prefix="game_scenario"):
 def save_scenario_to_file(scenario_data, filename):
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(scenario_data, f, ensure_ascii=False, indent=2)
-    st.success(f"'{filename}' 파일에 시나리오를 저장했습니다.")
 
 def load_scenario_from_file(filename):
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        # Pydantic 모델로 변환 (선택 사항이지만, 데이터 유효성 검사에 유용)
-        # validated_data = [TurnData(**turn) for turn in data]
-        # return validated_data
-        return data # 우선은 dict 리스트로 반환
-    except FileNotFoundError:
-        st.error(f"파일을 찾을 수 없습니다: {filename}")
-        return None
-    except json.JSONDecodeError:
-        st.error(f"JSON 디코딩 오류: {filename}")
+        return data
+    except (FileNotFoundError, json.JSONDecodeError):
         return None
 
 def get_available_scenarios(data_dir=DATA_DIR):
     files = [f for f in os.listdir(data_dir) if f.startswith("game_scenario_") and f.endswith(".json")]
     return sorted(files, reverse=True)
 
-
-# --- LLM Scenario Generation ---
-@st.cache_data(ttl=3600) # Cache for 1 hour
+@st.cache_data(ttl=3600)
 def generate_game_scenario_data_llm(scenario_type: str, openai_api_key: str):
     if not openai_api_key:
-        st.error("OpenAI API 키가 설정되지 않았습니다. 사이드바에서 키를 입력해주세요.")
         return None
 
     try:
-        # 기존 llm_handler 함수들을 사용하여 일관성 유지
         from src.models.llm_handler import initialize_llm, create_prompt_template, generate_game_data
         
-        # API 키를 환경변수에 설정
         os.environ["OPENAI_API_KEY"] = openai_api_key
-        
-        # LLM 초기화
         llm = initialize_llm()
-        
-        # 프롬프트 템플릿 생성
         system_prompt_str = get_system_prompt()
         prompt_template = create_prompt_template(system_prompt_str)
-        
-        # 게임 시나리오 프롬프트 생성
         game_prompt_str = get_game_scenario_prompt(scenario_type)
         
-        with st.spinner("AI가 게임 시나리오를 생성 중입니다... 잠시만 기다려주세요 ✨"):
-            # 기존 generate_game_data 함수 사용
-            json_content = generate_game_data(llm, prompt_template, game_prompt_str)
+        json_content = generate_game_data(llm, prompt_template, game_prompt_str)
         
         if json_content:
-            raw_json_output = json_content
-            # 때때로 LLM이 마크다운 코드 블록으로 감싸서 반환하는 경우가 있어 제거
-            if raw_json_output.startswith("```json\n"):
-                raw_json_output = raw_json_output[7:]
-            if raw_json_output.endswith("\n```"):
-                raw_json_output = raw_json_output[:-4]
-            
-            game_data = json.loads(raw_json_output)
-            # Pydantic 모델로 변환 시도 (선택적)
-            # validated_data = [TurnData(**turn) for turn in game_data]
-            # return validated_data
-            return game_data # 우선은 dict 리스트로 반환
+            try:
+                raw_json_output = json_content
+                if raw_json_output.startswith("```json\n"):
+                    raw_json_output = raw_json_output[7:]
+                if raw_json_output.endswith("\n```"):
+                    raw_json_output = raw_json_output[:-4]
+                
+                game_data = json.loads(raw_json_output)
+                
+                # 데이터 유효성 검사
+                if not isinstance(game_data, list) or len(game_data) == 0:
+                    st.error("생성된 게임 데이터가 올바르지 않습니다.")
+                    return None
+                
+                return game_data
+            except json.JSONDecodeError as e:
+                st.error(f"게임 데이터 파싱 실패: {e}")
+                return None
         else:
-            st.error("LLM에서 유효한 JSON 응답을 받지 못했습니다.")
             return None
             
-    except json.JSONDecodeError as e:
-        st.error(f"LLM으로부터 받은 JSON 응답을 파싱하는 데 실패했습니다: {e}")
-        if 'raw_json_output' in locals():
-            st.text_area("Raw LLM Output", value=raw_json_output, height=200)
-        return None
     except Exception as e:
-        st.error(f"시나리오 생성 중 오류 발생: {e}")
+        st.error(f"시나리오 생성 실패: {e}")
         return None
 
-# --- Streamlit App UI ---
-
-# --- Sidebar ---
-st.sidebar.title("게임 설정 ⚙️")
-
-# API 키 상태 관리 - 환경변수에서 자동으로 불러오기
-if 'openai_api_key' not in st.session_state:
-    st.session_state.openai_api_key = load_api_key()
-
-# API 키 상태 표시
-st.sidebar.header("OpenAI API 상태")
-if st.session_state.openai_api_key:
-    st.sidebar.success("✅ OpenAI API 키가 환경변수에서 로드되었습니다.")
-    # 키의 일부만 표시 (보안상)
-    masked_key = st.session_state.openai_api_key[:10] + "..." + st.session_state.openai_api_key[-4:] if len(st.session_state.openai_api_key) > 14 else "키가 설정됨"
-    st.sidebar.caption(f"사용 중인 키: {masked_key}")
-else:
-    st.sidebar.error("❌ OpenAI API 키를 찾을 수 없습니다.")
-    st.sidebar.info("💡 다음 방법 중 하나로 API 키를 설정하세요:")
-    st.sidebar.markdown("""
-    1. 환경변수 설정:
-       ```bash
-       export OPENAI_API_KEY="your-api-key"
-       ```
-    
-    2. .env 파일에 추가:
-       ```
-       OPENAI_API_KEY=your-api-key
-       ```
-    """)
-    
-    # 긴급 상황용 직접 입력 옵션 (접을 수 있는 형태로)
-    with st.sidebar.expander("🔧 API 키 직접 입력 (임시용)"):
-        manual_key = st.text_input("API 키를 입력하세요", type="password", help="이 방법은 임시용입니다. 환경변수 설정을 권장합니다.")
-        if manual_key:
-            st.session_state.openai_api_key = manual_key
-            st.success("API 키가 임시로 설정되었습니다.")
-            st.rerun()
-
-
-st.sidebar.header("게임 모드 선택")
-game_mode = st.sidebar.radio("모드 선택", ("새 시나리오 생성", "기존 시나리오 불러오기"), key="game_mode_selection")
-
-selected_scenario_display_name = st.sidebar.selectbox(
-    "시나리오 테마 선택",
-    options=list(SCENARIO_TYPES.keys()),
-    index=0,
-    key="scenario_theme_selection"
-)
-selected_scenario_type = SCENARIO_TYPES[selected_scenario_display_name]
-
-
-# --- Main Page ---
-st.title("📊 어린이 주식 투자 학습 게임 🎮")
-st.markdown("--- ")
-
-# --- Session State Initialization ---
+# 세션 상태 초기화
 if 'game_data' not in st.session_state:
     st.session_state.game_data = None
 if 'current_turn_index' not in st.session_state:
     st.session_state.current_turn_index = 0
-if 'player_investments' not in st.session_state: # {stock_name: amount_invested}
+if 'player_investments' not in st.session_state:
     st.session_state.player_investments = {}
 if 'player_balance' not in st.session_state:
-    st.session_state.player_balance = 100 # 초기 자금
-if 'investment_history' not in st.session_state: # For plotting investment changes
-    st.session_state.investment_history = [] # [{'turn': t, 'stock': name, 'value': val, 'type': 'investment'}]
+    st.session_state.player_balance = 100
+if 'investment_history' not in st.session_state:
+    st.session_state.investment_history = []
 if 'game_log' not in st.session_state:
     st.session_state.game_log = []
 if 'game_started' not in st.session_state:
     st.session_state.game_started = False
-if 'simulation_results_df' not in st.session_state:
-    st.session_state.simulation_results_df = None
+if 'current_step' not in st.session_state:
+    st.session_state.current_step = 'welcome'
+if 'openai_api_key' not in st.session_state:
+    st.session_state.openai_api_key = load_api_key()
 
-
-# --- Game Logic ---
-if game_mode == "새 시나리오 생성":
-    st.subheader("✨ 새 게임 시나리오 생성하기")
-    if st.button(f"'{selected_scenario_display_name}' 테마로 시나리오 생성 시작", key="generate_new_scenario_button"):
-        if not st.session_state.openai_api_key:
-            st.error("❌ OpenAI API 키가 설정되지 않았습니다.")
-            st.info("💡 사이드바의 'OpenAI API 상태' 섹션을 확인하고 환경변수를 설정해주세요.")
-        else:
-            st.session_state.game_data = None # Reset previous data
-            st.session_state.current_turn_index = 0
-            st.session_state.player_investments = {}
-            st.session_state.player_balance = 100
-            st.session_state.investment_history = []
-            st.session_state.game_log = ["새 게임 시작!"]
-            st.session_state.game_started = False
-            st.session_state.simulation_results_df = None
-
-            generated_data = generate_game_scenario_data_llm(selected_scenario_type, st.session_state.openai_api_key)
-            if generated_data:
-                st.session_state.game_data = generated_data
-                filename = generate_filename(selected_scenario_type)
-                save_scenario_to_file(st.session_state.game_data, filename)
-                st.success(f"'{selected_scenario_display_name}' 시나리오 생성 완료! 게임을 시작할 수 있습니다.")
-                st.balloons()
-
-
-elif game_mode == "기존 시나리오 불러오기":
-    st.subheader("📂 기존 게임 시나리오 불러오기")
-    available_files = get_available_scenarios()
-    if not available_files:
-        st.warning("저장된 시나리오 파일이 없습니다. 먼저 '새 시나리오 생성'을 진행해주세요.")
-    else:
-        selected_file = st.selectbox("불러올 시나리오 파일을 선택하세요:", available_files, key="load_scenario_file_select")
-        if st.button("선택한 시나리오 불러오기", key="load_scenario_button"):
-            if selected_file:
-                loaded_data = load_scenario_from_file(os.path.join(DATA_DIR, selected_file))
-                if loaded_data:
-                    st.session_state.game_data = loaded_data
-                    st.session_state.current_turn_index = 0
-                    st.session_state.player_investments = {}
-                    st.session_state.player_balance = 100
-                    st.session_state.investment_history = []
-                    st.session_state.game_log = [f"'{selected_file}' 게임 시작!"]
-                    st.session_state.game_started = False
-                    st.session_state.simulation_results_df = None
-                    st.success(f"'{selected_file}' 시나리오를 성공적으로 불러왔습니다. 게임을 시작할 수 있습니다.")
-                    st.balloons()
-
-# --- Display Game ---
-if st.session_state.game_data:
-    game_data = st.session_state.game_data
+# 메인 앱 시작
+def main():
+    # 헤더
+    st.markdown("""
+    <div class="main-header">
+        <h1>📈 EduStock</h1>
+        <p style="color: #666; font-size: 1.1rem;">아이들을 위한 쉬운 주식 투자 게임</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    if not st.session_state.game_started:
-        if st.button("게임 시작!", key="start_game_button"):
-            st.session_state.game_started = True
-            st.session_state.current_turn_index = 0
-            # Initialize player investments and history for the first turn's stocks
-            first_turn_data = game_data[0]
-            st.session_state.player_investments = {stock['name']: 0 for stock in first_turn_data['stocks']}
-            st.session_state.investment_history.append({
-                'turn': 0, # Before first turn
-                'balance': st.session_state.player_balance,
-                'total_asset_value': st.session_state.player_balance # Initially only balance
-            })
-            st.rerun() # Rerun to reflect game start
+    # 스텝 인디케이터
+    steps = ['welcome', 'setup', 'game', 'result']
+    step_names = ['시작', '설정', '게임', '결과']
+    
+    st.markdown('<div class="step-indicator">', unsafe_allow_html=True)
+    for i, (step, name) in enumerate(zip(steps, step_names)):
+        if step == st.session_state.current_step:
+            st.markdown(f'<div class="step active">{i+1}</div>', unsafe_allow_html=True)
+        elif steps.index(st.session_state.current_step) > i:
+            st.markdown(f'<div class="step completed">✓</div>', unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div class="step">{i+1}</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # 현재 스텝에 따른 화면 표시
+    if st.session_state.current_step == 'welcome':
+        show_welcome_screen()
+    elif st.session_state.current_step == 'setup':
+        show_setup_screen()
+    elif st.session_state.current_step == 'game':
+        show_game_screen()
+    elif st.session_state.current_step == 'result':
+        show_result_screen()
 
-    if st.session_state.game_started:
-        current_turn_index = st.session_state.current_turn_index
+def show_welcome_screen():
+    """환영 화면 - 미니멀하고 깔끔하게"""
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        st.markdown("""
+        <div class="card" style="text-align: center; padding: 3rem;">
+            <h2>🎮 게임 방법</h2>
+            <br>
+            <div style="text-align: left; margin: 2rem 0;">
+                <p>🎯 <strong>목표:</strong> 100코인으로 시작해서 투자를 통해 돈을 늘려보세요!</p>
+                <p>📰 <strong>방법:</strong> 매 턴마다 나오는 뉴스를 보고 어떤 주식을 살지 결정하세요</p>
+                <p>💡 <strong>팁:</strong> 뉴스를 잘 읽고 힌트를 활용해보세요</p>
+            </div>
+            <br>
+        </div>
+        """, unsafe_allow_html=True)
         
-        if current_turn_index < len(game_data):
-            current_turn_data = game_data[current_turn_index]
-            turn_number = current_turn_data['turn']
+        if st.button("🚀 게임 시작하기", key="start_game", use_container_width=True):
+            st.session_state.current_step = 'setup'
+            st.rerun()
 
-            st.header(f"턴 {turn_number} / {len(game_data)}")
+def show_setup_screen():
+    """설정 화면 - 간단한 선택"""
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown("### 🎭 게임 테마 선택")
+        
+        # 테마 선택을 카드 형식으로
+        selected_theme = st.radio(
+            "어떤 모험을 시작할까요?",
+            options=list(SCENARIO_TYPES.keys()),
+            index=0,
+            key="theme_selection"
+        )
+        
+        st.markdown("### 🎲 게임 모드")
+        game_mode = st.radio(
+            "게임 모드를 선택하세요",
+            options=["새 게임 시작", "저장된 게임 불러오기"],
+            key="mode_selection"
+        )
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # API 키 확인
+        if not st.session_state.openai_api_key and game_mode == "새 게임 시작":
+            st.markdown("""
+            <div style="background: #fff3cd; border-radius: 8px; padding: 1rem; margin: 1rem 0;">
+                ⚠️ <strong>API 키가 필요합니다</strong><br>
+                환경변수에 OPENAI_API_KEY를 설정해주세요
+            </div>
+            """, unsafe_allow_html=True)
             
-            # Display Player Balance
-            st.subheader(f"💰 나의 자산 현황")
-            col_bal, col_asset = st.columns(2)
-            col_bal.metric("현재 보유 코인", f"{st.session_state.player_balance} 코인")
-            
-            total_asset_value = st.session_state.player_balance
-            for stock_name, invested_amount in st.session_state.player_investments.items():
-                if invested_amount > 0:
-                    # Find current value of this stock
-                    stock_info = next((s for s in current_turn_data['stocks'] if s['name'] == stock_name), None)
-                    if stock_info:
-                        # Assuming invested_amount is number of shares, need initial price to calculate shares
-                        # For simplicity, let's assume invested_amount is the *value* invested at purchase time.
-                        # This needs refinement if we track shares.
-                        # For now, let's assume player_investments stores the *current value* of that stock holding.
-                        # This part needs a clearer logic for how shares vs. value are tracked.
-                        # Let's assume player_investments stores the number of shares.
-                        # We need to know the purchase price to calculate this.
-                        # For now, let's simplify: player_investments stores the amount of *coins* invested in that stock.
-                        # The value of this investment changes with current_value.
-                        # This is still tricky. Let's assume player_investments stores number of shares.
-                        # We need to store purchase price or initial value at purchase.
-
-                        # Simplified: Let's track current value of holdings directly.
-                        # When buying: player_investments[stock_name] += amount_to_buy (value)
-                        # Value update: player_investments[stock_name] *= (current_price / previous_price)
-                        # This requires storing previous price.
-
-                        # Simplest for now: player_investments stores number of shares.
-                        # initial_buy_prices must be stored somewhere or assumed to be initial_value of the stock.
-                        # Let's assume shares were bought at stock['initial_value'] for simplicity in this version.
-                        # This is a major simplification and should be improved for a real game.
+            manual_key = st.text_input("또는 여기에 직접 입력:", type="password")
+            if manual_key:
+                st.session_state.openai_api_key = manual_key
+        
+        # 다음 단계 버튼
+        if st.button("다음 단계", use_container_width=True):
+            if game_mode == "새 게임 시작":
+                if st.session_state.openai_api_key:
+                    # 게임 데이터 생성
+                    with st.spinner("🎮 게임 세상을 만들고 있어요..."):
+                        scenario_type = SCENARIO_TYPES[selected_theme]
+                        game_data = generate_game_scenario_data_llm(scenario_type, st.session_state.openai_api_key)
                         
-                        # To avoid overcomplicating now, let's assume player_investments stores the *number of shares*.
-                        # And we need to track the price at which they were bought or use a running average.
-                        # For this example, let's assume shares are bought at current turn's price.
-                        
-                        # Let's refine: player_investments = {stock_name: {'shares': X, 'avg_purchase_price': Y}}
-                        # For now, let's stick to a simpler model if possible or clearly state assumptions.
-
-                        # Re-simplification: player_investments stores the *value* of the stock they hold, updated each turn.
-                        # This means when a stock price changes, the value of their holding changes.
-                        # This is what the simulator does.
-                        # So, total_asset_value += sum(st.session_state.player_investments.values()) - this is not quite right.
-                        # player_investments should store number of shares.
-
-                        # Let's reset and use a clear model:
-                        # st.session_state.player_portfolio = {stock_name: {'shares': float, 'purchase_turn_prices': list[float]}}
-                        # player_balance is cash.
-                        # total_asset_value = player_balance + sum(portfolio[stock]['shares'] * current_stock_price[stock] for stock in portfolio)
-
-                        # For this iteration, let's use the existing simpler `player_investments`
-                        # and assume it stores the *number of shares*.
-                        # We'll need to fetch the current price of those shares.
-                        current_stock_price = stock_info['current_value']
-                        total_asset_value += invested_amount * current_stock_price # invested_amount is shares
-
-            col_asset.metric("총 자산 가치", f"{total_asset_value:.0f} 코인")
-
-
-            st.markdown("--- ")
-            st.subheader("📢 이번 턴 소식")
-            
-            # Display Result (from previous turn's news)
-            st.info(f"**지난 턴 결과:** {current_turn_data['result']}")
-            
-            # Display News (for next turn)
-            st.warning(f"**새로운 소식:** {current_turn_data['news']}")
-            st.caption(f"힌트: {current_turn_data['news_hint']}")
-            
-            st.markdown("--- ")
-            st.subheader("📈 투자 아이템 현황 및 투자하기")
-
-            form = st.form(key=f"turn_{turn_number}_investment_form")
-            cols = form.columns(len(current_turn_data['stocks']))
-            
-            investment_inputs = {}
-
-            for i, stock in enumerate(current_turn_data['stocks']):
-                with cols[i]:
-                    st.markdown(f"#### {stock['name']}")
-                    st.markdown(f"*{stock['description']}*", help=f"위험도: {stock['risk_level']}")
-                    st.metric(label="현재 가치", value=f"{stock['current_value']} 코인", delta=f"{stock['current_value'] - stock['initial_value']} (초기 대비)")
-                    st.caption(f"다음 턴 예상: {stock['expectation']}")
-                    
-                    # Investment input
-                    # Allow buying shares. Selling is more complex for now (which shares to sell if bought at different prices?)
-                    # Simple model: can adjust total number of shares.
-                    # If current_shares = player_investments.get(stock['name'], 0)
-                    # new_total_shares = number_input(...)
-                    # cost_or_gain = (new_total_shares - current_shares) * stock['current_value']
-                    # player_balance -= cost_or_gain
-                    
-                    # Simpler: Input how many *additional* shares to buy or sell.
-                    # Positive to buy, negative to sell.
-                    
-                    current_shares_held = st.session_state.player_investments.get(stock['name'], 0)
-                    st.write(f"현재 보유 수량: {current_shares_held} 주")
-
-                    investment_inputs[stock['name']] = form.number_input(
-                        label=f"{stock['name']} 투자 수량 (매수+/매도-)", 
-                        min_value=-current_shares_held, # Can sell up to what they have
-                        # max_value can be limited by balance / current_price if buying
-                        value=0, 
-                        step=1, 
-                        key=f"invest_{stock['name']}_{turn_number}"
-                    )
-            
-            submit_button = form.form_submit_button(label="이번 턴 투자 결정! ✨")
-
-            if submit_button:
-                total_investment_cost = 0
-                actions_taken_this_turn = []
-
-                # Calculate total cost/gain from proposed transactions
-                for stock_name, shares_to_change in investment_inputs.items():
-                    if shares_to_change != 0:
-                        stock_info = next((s for s in current_turn_data['stocks'] if s['name'] == stock_name), None)
-                        if stock_info:
-                            price_per_share = stock_info['current_value']
-                            total_investment_cost += shares_to_change * price_per_share
+                        if game_data:
+                            st.session_state.game_data = game_data
+                            filename = generate_filename(scenario_type)
+                            save_scenario_to_file(game_data, filename)
                             
-                if total_investment_cost > st.session_state.player_balance and any(s > 0 for s in investment_inputs.values()): # If trying to buy more than balance allows
-                    st.error(f"코인이 부족합니다! 총 필요 코인: {total_investment_cost}, 보유 코인: {st.session_state.player_balance}")
+                            # 게임 상태 초기화
+                            st.session_state.current_turn_index = 0
+                            st.session_state.player_investments = {}
+                            st.session_state.player_balance = 100
+                            st.session_state.investment_history = []
+                            st.session_state.game_log = []
+                            st.session_state.game_started = True
+                            st.session_state.current_step = 'game'
+                            
+                            st.success("게임 세상이 완성되었어요! 🎉")
+                            st.rerun()
+                        else:
+                            st.error("게임 생성에 실패했어요. 다시 시도해주세요.")
                 else:
-                    # Process transactions
-                    for stock_name, shares_to_change in investment_inputs.items():
-                        if shares_to_change != 0:
-                            stock_info = next((s for s in current_turn_data['stocks'] if s['name'] == stock_name), None)
-                            if stock_info:
-                                price_per_share = stock_info['current_value']
-                                cost_for_this_stock = shares_to_change * price_per_share
-                                
-                                st.session_state.player_balance -= cost_for_this_stock
-                                current_shares = st.session_state.player_investments.get(stock_name, 0)
-                                st.session_state.player_investments[stock_name] = current_shares + shares_to_change
-                                
-                                action = "매수" if shares_to_change > 0 else "매도"
-                                log_message = f"턴 {turn_number}: {stock_name} {abs(shares_to_change)}주 {action} (주당 {price_per_share}코인). 잔액: {st.session_state.player_balance}"
-                                st.session_state.game_log.append(log_message)
-                                actions_taken_this_turn.append(log_message)
-                    
-                    if actions_taken_this_turn:
-                        for log in actions_taken_this_turn:
-                            st.success(log)
-                    else:
-                        st.info("이번 턴에는 투자 변경사항이 없습니다.")
-
-                    # Record asset history for this turn *after* investment decisions
-                    current_total_asset_value = st.session_state.player_balance
-                    for stock_name, shares_held in st.session_state.player_investments.items():
-                        if shares_held > 0:
-                            stock_info_for_value = next((s for s in current_turn_data['stocks'] if s['name'] == stock_name), None)
-                            if stock_info_for_value:
-                                current_total_asset_value += shares_held * stock_info_for_value['current_value']
-                    
-                    # Record consolidated investment history for this turn
-                    st.session_state.investment_history.append({
-                        'turn': turn_number,
-                        'balance': st.session_state.player_balance,
-                        'total_asset_value': current_total_asset_value,
-                        'investments': dict(st.session_state.player_investments)
-                    })
-
-
-                    # Move to next turn
-                    st.session_state.current_turn_index += 1
-                    if st.session_state.current_turn_index < len(game_data):
-                        st.info("투자가 완료되었습니다. '다음 턴으로' 버튼을 눌러 진행하세요.")
-                    # Auto-advance or use a button
-                    # For now, let's make it so the form submission itself implies readiness for next turn's display
-                    # We need a clear "Next Turn" button if form submission doesn't auto-advance the view.
-                    # The current structure will re-render the *new* current_turn_index data.
-                    st.rerun()
-
-
-            if st.session_state.current_turn_index < len(game_data) and turn_number != game_data[st.session_state.current_turn_index]['turn']:
-                 if st.button("다음 턴으로 이동 ➡️", key="next_turn_button_main"):
-                    st.rerun()
-
-
-        else: # Game finished
-            st.header("🎉 게임 종료! 🎉")
-            st.balloons()
-            
-            final_balance = st.session_state.player_balance
-            final_total_asset_value = st.session_state.investment_history[-1]['total_asset_value'] if st.session_state.investment_history and 'total_asset_value' in st.session_state.investment_history[-1] else final_balance
-
-
-            st.subheader("최종 결과")
-            st.metric("최종 보유 코인", f"{final_balance} 코인")
-            st.metric("최종 총 자산 가치", f"{final_total_asset_value:.0f} 코인")
-            
-            initial_total_asset = 100 # Assuming starting with 100 coins and no stocks
-            profit = final_total_asset_value - initial_total_asset
-            profit_percentage = (profit / initial_total_asset) * 100 if initial_total_asset > 0 else 0
-            
-            st.metric("총 수익", f"{profit:.0f} 코인", delta=f"{profit_percentage:.2f}%")
-
-            if profit > 0:
-                st.success("축하합니다! 투자를 통해 자산을 늘렸습니다! 🥳")
-            elif profit < 0:
-                st.error("아쉽지만, 이번에는 자산이 줄었네요. 다음 기회에 더 잘할 수 있을 거예요! 💪")
+                    st.error("API 키를 먼저 설정해주세요.")
             else:
-                st.info("본전이네요! 다음번엔 수익을 내봐요! 🧐")
+                # 저장된 게임 불러오기
+                available_files = get_available_scenarios()
+                if available_files:
+                    selected_file = st.selectbox("불러올 게임을 선택하세요:", available_files)
+                    if selected_file and st.button("게임 불러오기", use_container_width=True):
+                        game_data = load_scenario_from_file(os.path.join(DATA_DIR, selected_file))
+                        if game_data:
+                            st.session_state.game_data = game_data
+                            
+                            # 게임 상태 초기화
+                            st.session_state.current_turn_index = 0
+                            st.session_state.player_investments = {}
+                            st.session_state.player_balance = 100
+                            st.session_state.investment_history = []
+                            st.session_state.game_log = []
+                            st.session_state.game_started = True
+                            st.session_state.current_step = 'game'
+                            
+                            st.success("게임을 불러왔어요! 🎉")
+                            st.rerun()
+                        else:
+                            st.error("게임 파일을 읽을 수 없어요.")
+                else:
+                    st.warning("저장된 게임이 없어요. 새 게임을 시작해주세요.")
 
-            # Display investment history plot
-            if st.session_state.investment_history:
-                st.subheader("📊 나의 자산 변화 그래프")
-                
-                # Prepare data for plotting total asset value and balance over turns
-                history_df_main = pd.DataFrame([h for h in st.session_state.investment_history if 'balance' in h and 'total_asset_value' in h])
-                if not history_df_main.empty:
-                    history_df_main = history_df_main.set_index('turn')
-                    st.line_chart(history_df_main[['balance', 'total_asset_value']])
-                
-                # Prepare data for plotting individual stock holdings
-                if st.session_state.investment_history:
-                    st.subheader("📦 보유 주식 수량 변화")
-                    # Create a dataframe showing portfolio changes over time
-                    portfolio_data = []
-                    for entry in st.session_state.investment_history:
-                        if 'investments' in entry:
-                            for stock_name, shares in entry['investments'].items():
-                                if shares > 0:
-                                    portfolio_data.append({
-                                        'turn': entry['turn'],
-                                        'stock_name': stock_name,
-                                        'shares_held': shares
-                                    })
-                    
-                    if portfolio_data:
-                        portfolio_df = pd.DataFrame(portfolio_data)
-                        pivot_portfolio = portfolio_df.pivot_table(index='turn', columns='stock_name', values='shares_held', fill_value=0)
-                        st.area_chart(pivot_portfolio)
-
-
-            # Display game log
-            st.subheader("📜 게임 로그")
-            for log_entry in reversed(st.session_state.game_log):
-                st.text(log_entry)
-            
-            # Option to restart or load new scenario
-            if st.button("새 게임 시작 또는 다른 시나리오 불러오기", key="restart_game_end"):
-                # Reset all relevant session state variables
-                st.session_state.game_data = None
-                st.session_state.current_turn_index = 0
-                st.session_state.player_investments = {}
-                st.session_state.player_balance = 100
-                st.session_state.investment_history = []
-                st.session_state.game_log = []
-                st.session_state.game_started = False
-                st.session_state.simulation_results_df = None
-                # Potentially switch game_mode or clear selections if needed
-                # For now, just rerun to go back to the selection screen
-                st.rerun()
-
-    # --- Simulation Section (Optional, can be expanded) ---
-    if st.session_state.game_data and not st.session_state.game_started : # Show simulation option only if data is loaded but game not started by player
-        st.markdown("--- ")
-        st.subheader("🤖 AI 시뮬레이션 (참고용)")
-        st.write("현재 불러온 시나리오에 대해 AI가 자동으로 투자를 시뮬레이션한 결과를 볼 수 있습니다.")
+def show_game_screen():
+    """게임 화면 - 깔끔하고 직관적"""
+    
+    if not st.session_state.game_data:
+        st.error("게임 데이터가 없습니다.")
+        return
+    
+    game_data = st.session_state.game_data
+    current_turn_index = st.session_state.current_turn_index
+    
+    # 게임 종료 체크
+    if current_turn_index >= len(game_data):
+        st.session_state.current_step = 'result'
+        st.rerun()
+        return
+    
+    current_turn_data = game_data[current_turn_index]
+    turn_number = current_turn_data.get('turn', current_turn_index + 1)
+    
+    # 턴 데이터 유효성 검사
+    if 'stocks' not in current_turn_data or not current_turn_data['stocks']:
+        st.error("게임 데이터에 문제가 있습니다. 새 게임을 시작해주세요.")
+        return
+    
+    # 상단 정보 카드
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-card">
+            <h3>턴 {turn_number}</h3>
+            <p>총 {len(game_data)}턴</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-card">
+            <h3>💰 {st.session_state.player_balance}</h3>
+            <p>보유 코인</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        # 총 자산 계산
+        total_assets = st.session_state.player_balance
+        for stock_name, shares in st.session_state.player_investments.items():
+            if shares > 0:  # 양수인 주식만 계산
+                stock_info = next((s for s in current_turn_data['stocks'] if s['name'] == stock_name), None)
+                if stock_info:
+                    total_assets += shares * stock_info['current_value']
         
-        if st.button("AI 투자 시뮬레이션 실행하기", key="run_simulation_button"):
-            if st.session_state.game_data:
-                try:
-                    # Use the existing run_automated_simulation function
-                    simulation_result = run_automated_simulation(st.session_state.game_data, "random")
-                    
-                    if simulation_result:
-                        final_capital = simulation_result.get('final_capital', 0)
-                        profit_rate = simulation_result.get('profit_rate', 0)
-                        
-                        st.success(f"AI 시뮬레이션 완료! 최종 자산: {final_capital:.2f} 코인 (수익률: {profit_rate:.2f}%)")
-                        
-                        # Display simulation plot
-                        fig = create_simple_stock_plot(st.session_state.game_data, "AI 시뮬레이션 결과 - 주식 가치 변화")
-                        if fig:
-                            st.plotly_chart(fig, use_container_width=True)
+        st.markdown(f"""
+        <div class="metric-card">
+            <h3>📊 {total_assets:.0f}</h3>
+            <p>총 자산</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # 뉴스 카드
+    st.markdown(f"""
+    <div class="news-card">
+        <h3>📰 이번 턴 소식</h3>
+        <p><strong>결과:</strong> {current_turn_data['result']}</p>
+        <p><strong>뉴스:</strong> {current_turn_data['news']}</p>
+        <p><em>💡 힌트: {current_turn_data['news_hint']}</em></p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 주식 카드들
+    st.markdown("### 📈 투자 선택")
+    
+    with st.form(key=f"investment_form_{turn_number}"):
+        investment_inputs = {}
+        
+        for stock in current_turn_data['stocks']:
+            st.markdown(f"""
+            <div class="stock-card">
+                <h4>{stock['name']}</h4>
+                <p style="color: #666;">{stock['description']}</p>
+                <div style="display: flex; justify-content: space-between; margin: 1rem 0;">
+                    <div>
+                        <strong>{stock['current_value']} 코인</strong>
+                        <small style="color: #888;">현재 가격</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <small style="color: #888;">위험도: {stock['risk_level']}</small><br>
+                        <small style="color: #666;">예상: {stock['expectation']}</small>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            current_shares = st.session_state.player_investments.get(stock['name'], 0)
+            
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                st.write(f"현재 보유: {current_shares}주")
+            with col2:
+                max_buy = st.session_state.player_balance // stock['current_value']
+                investment_inputs[stock['name']] = st.number_input(
+                    f"매수(+)/매도(-) 수량",
+                    min_value=-current_shares,
+                    max_value=max_buy + current_shares,  # 현재 보유 + 최대 매수 가능
+                    value=0,
+                    step=1,
+                    key=f"invest_{stock['name']}_{turn_number}",
+                    help=f"최대 매수 가능: {max_buy}주"
+                )
+        
+        # 투자 실행 버튼
+        if st.form_submit_button("💼 투자 실행", use_container_width=True):
+            process_investment(investment_inputs, current_turn_data, turn_number)
 
-                        # Show investment history if available
-                        if 'investment_history' in simulation_result:
-                            st.subheader("AI 투자 히스토리")
-                            history_df = pd.DataFrame(simulation_result['investment_history'])
-                            st.dataframe(history_df, use_container_width=True)
-                    else:
-                        st.error("시뮬레이션 실행에 실패했습니다.")
+def process_investment(investment_inputs, current_turn_data, turn_number):
+    """투자 처리 로직"""
+    total_cost = 0
+    
+    # 총 비용 계산 (매수만)
+    for stock_name, shares_change in investment_inputs.items():
+        if shares_change > 0:  # 매수만 비용 계산
+            stock_info = next((s for s in current_turn_data['stocks'] if s['name'] == stock_name), None)
+            if stock_info:
+                total_cost += shares_change * stock_info['current_value']
+    
+    # 잔액 확인 (매수 비용만)
+    if total_cost > st.session_state.player_balance:
+        st.error("💸 코인이 부족해요!")
+        return
+    
+    # 투자 실행
+    actions = []
+    for stock_name, shares_change in investment_inputs.items():
+        if shares_change != 0:
+            stock_info = next((s for s in current_turn_data['stocks'] if s['name'] == stock_name), None)
+            if stock_info:
+                cost = shares_change * stock_info['current_value']
+                st.session_state.player_balance -= cost
+                
+                current_shares = st.session_state.player_investments.get(stock_name, 0)
+                st.session_state.player_investments[stock_name] = current_shares + shares_change
+                
+                action_type = "매수" if shares_change > 0 else "매도"
+                actions.append(f"{stock_name} {abs(shares_change)}주 {action_type}")
+    
+    if actions:
+        st.success(f"✅ 투자 완료: {', '.join(actions)}")
+    else:
+        st.info("변경사항이 없어요.")
+    
+    # 히스토리 기록
+    total_assets = st.session_state.player_balance
+    for stock_name, shares in st.session_state.player_investments.items():
+        if shares > 0:
+            stock_info = next((s for s in current_turn_data['stocks'] if s['name'] == stock_name), None)
+            if stock_info:
+                total_assets += shares * stock_info['current_value']
+    
+    st.session_state.investment_history.append({
+        'turn': turn_number,
+        'balance': st.session_state.player_balance,
+        'total_asset_value': total_assets,
+        'investments': dict(st.session_state.player_investments)
+    })
+    
+    # 다음 턴으로
+    st.session_state.current_turn_index += 1
+    
+    # 자동으로 다음 화면으로
+    if st.session_state.current_turn_index >= len(st.session_state.game_data):
+        st.session_state.current_step = 'result'
+    
+    st.rerun()
 
-                except Exception as e:
-                    st.error(f"시뮬레이션 중 오류 발생: {e}")
-                    st.error("게임 데이터 형식을 확인해주세요.")
+def show_result_screen():
+    """결과 화면 - 성과 요약"""
+    
+    st.markdown("### 🎉 게임 완료!")
+    
+    if not st.session_state.investment_history:
+        st.error("게임 데이터가 없습니다.")
+        
+        # 에러 상황에서도 사용자가 다시 시작할 수 있는 옵션 제공
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🔄 새 게임 시작", use_container_width=True):
+                # 상태 초기화
+                for key in ['game_data', 'current_turn_index', 'player_investments', 
+                           'player_balance', 'investment_history', 'game_log', 'game_started']:
+                    if key in st.session_state:
+                        del st.session_state[key]
+                
+                st.session_state.current_step = 'welcome'
+                st.rerun()
+        
+        with col2:
+            if st.button("⚙️ 게임 설정으로", use_container_width=True):
+                st.session_state.current_step = 'setup'
+                st.rerun()
+        
+        return
+    
+    final_assets = st.session_state.investment_history[-1]['total_asset_value']
+    initial_assets = 100
+    profit = final_assets - initial_assets
+    profit_rate = (profit / initial_assets) * 100
+    
+    # 결과 카드
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-card">
+            <h3>💰 {final_assets:.0f}</h3>
+            <p>최종 자산</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        color = "green" if profit >= 0 else "red"
+        st.markdown(f"""
+        <div class="metric-card">
+            <h3 style="color: {color};">{'📈' if profit >= 0 else '📉'} {profit:+.0f}</h3>
+            <p>수익/손실</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="metric-card">
+            <h3 style="color: {color};">{profit_rate:+.1f}%</h3>
+            <p>수익률</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # 성과 메시지
+    if profit > 20:
+        st.success("🏆 대박! 정말 훌륭한 투자였어요!")
+    elif profit > 0:
+        st.success("👍 잘했어요! 수익을 냈네요!")
+    elif profit > -10:
+        st.info("😊 아쉽지만 나쁘지 않아요!")
+    else:
+        st.warning("😅 다음엔 더 잘할 수 있을 거예요!")
+    
+    # 자산 변화 그래프
+    if len(st.session_state.investment_history) > 1:
+        st.markdown("### 📊 내 투자 여정")
+        
+        history_df = pd.DataFrame([
+            {'턴': h['turn'], '총자산': h['total_asset_value'], '현금': h['balance']} 
+            for h in st.session_state.investment_history
+        ])
+        
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=history_df['턴'], 
+            y=history_df['총자산'],
+            mode='lines+markers',
+            name='총 자산',
+            line=dict(color='#667eea', width=3)
+        ))
+        fig.add_trace(go.Scatter(
+            x=history_df['턴'], 
+            y=history_df['현금'],
+            mode='lines+markers',
+            name='현금',
+            line=dict(color='#f093fb', width=3)
+        ))
+        
+        fig.update_layout(
+            height=400,
+            template='plotly_white',
+            hovermode='x unified'
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+    
+    # 다시 시작 버튼
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("🔄 새 게임 시작", use_container_width=True):
+            # 상태 초기화
+            for key in ['game_data', 'current_turn_index', 'player_investments', 
+                       'player_balance', 'investment_history', 'game_log', 'game_started']:
+                if key in st.session_state:
+                    del st.session_state[key]
+            
+            st.session_state.current_step = 'welcome'
+            st.rerun()
+    
+    with col2:
+        if st.button("⚙️ 다른 테마로 플레이", use_container_width=True):
+            # 상태 초기화
+            for key in ['game_data', 'current_turn_index', 'player_investments', 
+                       'player_balance', 'investment_history', 'game_log', 'game_started']:
+                if key in st.session_state:
+                    del st.session_state[key]
+            
+            st.session_state.current_step = 'setup'
+            st.rerun()
 
-
-# --- Footer or additional info ---
-st.markdown("--- ")
-st.caption("EduStock LLM Game - 아이들을 위한 재미있는 투자 학습 게임")
+if __name__ == "__main__":
+    main()
