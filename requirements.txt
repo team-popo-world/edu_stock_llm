@@ -6,3 +6,8 @@ langchain
 langchain-openai
 openai
 matplotlib
+pandas
+numpy
+streamlit
+plotly
+jupyter

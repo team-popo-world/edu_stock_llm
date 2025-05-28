@@ -21,7 +21,7 @@ from src.data.data_handler import parse_json_data, save_game_data, load_game_dat
 from src.simulation.simulator import run_automated_simulation
 
 app = FastAPI(
-    title="아기돼지 삼형제 주식회사 투자 시뮬레이션 API",
+    title="스토리텔링 주식 투자 시뮬레이션 API",
     description="LLM을 활용한 주식 투자 시나리오 생성 및 시뮬레이션 API입니다.",
     version="0.1.0"
 )
@@ -37,9 +37,7 @@ app.add_middleware(
 
 # --- Pydantic 모델 정의 ---
 class ScenarioParameters(BaseModel):
-    # 필요에 따라 LLM에 전달할 파라미터 정의 (예: 난이도, 특정 이벤트 등)
-    # 현재는 get_game_scenario_prompt()가 파라미터 없이 작동하므로 비워둡니다.
-    pass
+    scenario_type: str = Field(default="magic_kingdom", description="시나리오 타입 (magic_kingdom, foodtruck_kingdom, 또는 moonlight_thief)")
 
 class SimulationRequest(BaseModel):
     scenario_id: str = Field(..., description="시뮬레이션을 실행할 시나리오 ID (파일명)")
@@ -68,12 +66,16 @@ async def generate_new_scenario(params: Optional[ScenarioParameters] = None):
     생성된 시나리오는 'data' 디렉토리에 저장됩니다.
     """
     try:
+        # 시나리오 타입 결정
+        scenario_type = "magic_kingdom"  # 기본값
+        if params and params.scenario_type:
+            scenario_type = params.scenario_type
+        
         llm = initialize_llm()
         system_prompt = get_system_prompt()
         prompt_template = create_prompt_template(system_prompt)
-        # params를 사용하여 game_scenario_prompt를 동적으로 변경할 수 있습니다.
-        # 현재는 get_game_scenario_prompt가 파라미터 없이 작동합니다.
-        game_scenario_prompt_text = get_game_scenario_prompt()
+        # 선택된 시나리오 타입을 사용하여 프롬프트 생성
+        game_scenario_prompt_text = get_game_scenario_prompt(scenario_type)
 
         json_content = generate_game_data(llm, prompt_template, game_scenario_prompt_text)
         game_data = parse_json_data(json_content)
@@ -82,10 +84,10 @@ async def generate_new_scenario(params: Optional[ScenarioParameters] = None):
             raise HTTPException(status_code=500, detail="LLM으로부터 유효한 시나리오 데이터를 생성하지 못했습니다.")
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"game_scenario_{timestamp}.json"
+        output_filename = f"game_scenario_{scenario_type}_{timestamp}.json"
         save_game_data(game_data, BASE_DATA_DIR, output_filename)
         
-        return {"scenario_id": output_filename, "data": game_data}
+        return {"scenario_id": output_filename, "scenario_type": scenario_type, "data": game_data}
 
     except Exception as e:
         # 실제 운영 환경에서는 더 구체적인 오류 처리 및 로깅이 필요합니다.
@@ -155,6 +157,31 @@ async def run_automated_investment_simulation(request: SimulationRequest):
         best_strategy=best_strategy_name,
         best_profit_rate=best_profit
     )
+
+@app.get("/scenario-types", summary="사용 가능한 시나리오 타입 조회", response_model=Dict[str, Any])
+async def get_scenario_types():
+    """
+    사용 가능한 게임 시나리오 타입 목록과 설명을 반환합니다.
+    """
+    return {
+        "scenario_types": [
+            {
+                "id": "magic_kingdom",
+                "name": "🏰 마법 왕국",
+                "description": "빵집, 서커스단, 마법연구소 - 마법사가 되어 마법 코인으로 투자하는 이야기"
+            },
+            {
+                "id": "foodtruck_kingdom", 
+                "name": "🚚 푸드트럭 왕국",
+                "description": "샌드위치 트럭, 아이스크림 트럭, 퓨전 타코 트럭 - 요리사가 되어 미식 코인으로 투자하는 이야기"
+            },
+            {
+                "id": "moonlight_thief",
+                "name": "🌙 달빛 도둑",
+                "description": "암시장 도둑단, 밀수업체, 정보브로커 - 달빛 도시의 암시장에서 루나 코인으로 투자하는 이야기"
+            }
+        ]
+    }
 
 @app.get("/scenarios", summary="저장된 모든 시나리오 목록 조회", response_model=List[str])
 async def list_all_scenarios():

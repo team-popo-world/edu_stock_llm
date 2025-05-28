@@ -2,8 +2,12 @@
 메인 파이프라인 실행 모듈 - 데이터 생성에서 시각화까지
 """
 import os
+import sys
 import argparse
 from datetime import datetime
+
+# 현재 파일의 상위 디렉토리를 시스템 경로에 추가
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # 내부 모듈 가져오기
 from src.utils.config import load_api_key, get_model_settings
@@ -19,9 +23,54 @@ def create_directory_if_not_exists(path):
         os.makedirs(path)
         print(f"디렉토리 생성: {path}")
 
+def select_scenario_type(args):
+    """
+    시나리오 타입을 선택합니다.
+    
+    Args:
+        args: 명령줄 인자
+        
+    Returns:
+        str: 선택된 시나리오 타입
+    """
+    # 명령줄에서 시나리오가 지정된 경우
+    if args.scenario_type:
+        return args.scenario_type
+    
+    # 인터랙티브 선택
+    print("🎭 게임 시나리오를 선택해주세요!")
+    print("=" * 50)
+    print("1) 🏰 마법 왕국 (magic_kingdom)")
+    print("   - 빵집, 서커스단, 마법연구소")
+    print("   - 마법사가 되어 마법 코인으로 투자하는 이야기")
+    print()
+    print("2) 🚚 푸드트럭 왕국 (foodtruck_kingdom)")
+    print("   - 샌드위치 트럭, 아이스크림 트럭, 퓨전 타코 트럭")
+    print("   - 요리사가 되어 미식 코인으로 투자하는 이야기")
+    print()
+    print("3) 🌙 달빛 도둑 (moonlight_thief)")
+    print("   - 암시장 도둑단, 밀수업체, 정보브로커")
+    print("   - 달빛 도시의 암시장에서 루나 코인으로 투자하는 이야기")
+    print()
+    
+    while True:
+        choice = input("시나리오를 선택하세요 (1, 2, 또는 3): ").strip()
+        if choice == "1":
+            return "magic_kingdom"
+        elif choice == "2":
+            return "foodtruck_kingdom"
+        elif choice == "3":
+            return "moonlight_thief"
+        else:
+            print("❌ 잘못된 선택입니다. 1, 2, 또는 3을 입력해주세요.")
+
 def generate_pipeline(args):
     """전체 파이프라인을 실행합니다."""
-    print("아기돼지 삼형제 주식회사 투자 시뮬레이션 파이프라인 시작...")
+    print("스토리텔링 주식회사 투자 시뮬레이션 파이프라인 시작...")
+    
+    # 시나리오 타입 선택
+    scenario_type = select_scenario_type(args)
+    print(f"\n✅ 선택된 시나리오: {scenario_type}")
     
     # 기본 디렉토리 확인 및 생성
     project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -52,7 +101,7 @@ def generate_pipeline(args):
                 # 프롬프트 준비
                 system_prompt = get_system_prompt()
                 prompt_template = create_prompt_template(system_prompt)
-                game_scenario_prompt = get_game_scenario_prompt()
+                game_scenario_prompt = get_game_scenario_prompt(scenario_type)  # 선택된 시나리오 타입 전달
                 
                 # 게임 데이터 생성
                 json_content = generate_game_data(llm, prompt_template, game_scenario_prompt)
@@ -86,7 +135,7 @@ def generate_pipeline(args):
         if args.output_file:
             output_file = args.output_file
         else:
-            output_file = f"game_scenario_{timestamp}.json"
+            output_file = f"game_scenario_{scenario_type}_{timestamp}.json"  # 시나리오 타입 포함
         
         save_path = save_game_data(game_data, data_dir, output_file)
     
@@ -139,7 +188,7 @@ def generate_pipeline(args):
 
 if __name__ == "__main__":
     # 명령줄 인자 파싱
-    parser = argparse.ArgumentParser(description="아기돼지 삼형제 주식회사 투자 시뮬레이션")
+    parser = argparse.ArgumentParser(description="스토리텔링 주식 투자 시뮬레이션")
     
     parser.add_argument("--use-existing", action="store_true", 
                         help="기존 JSON 파일 사용")
@@ -155,6 +204,8 @@ if __name__ == "__main__":
                         help="시뮬레이션 실행")
     parser.add_argument("--auto-sim", action="store_true", 
                         help="자동화된 시뮬레이션 실행")
+    parser.add_argument("--scenario-type", type=str, choices=["magic_kingdom", "foodtruck_kingdom", "moonlight_thief"], 
+                        help="시나리오 타입 선택 (magic_kingdom, foodtruck_kingdom, 또는 moonlight_thief)")
     
     args = parser.parse_args()
     

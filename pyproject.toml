@@ -1,0 +1,26 @@
+[project]
+name = "edu-stock-llm"
+version = "0.1.0"
+description = "Educational stock investment simulation with LLM"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+    "python-dotenv",
+    "langchain",
+    "langchain-openai",
+    "openai",
+    "matplotlib",
+    "pandas",
+    "numpy",
+    "streamlit",
+    "plotly",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

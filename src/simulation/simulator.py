@@ -19,7 +19,7 @@ def run_simulation(game_data):
     
     try:
         print("\n===== 아기돼지 삼형제 주식회사 투자 시뮬레이션 =====\n")
-        print("각 턴마다 세 종목('첫째집', '둘째집', '셋째집') 중 하나에 투자할 수 있습니다.")
+        print("각 턴마다 종목 중 하나를 선택하여 투자할 수 있습니다.")
         print("시작 자본금은 1000원이며, 턴이 끝날 때마다 투자한 종목의 수익률에 따라 자본금이 변동됩니다.\n")
         
         initial_capital = 1000  # 초기 자본금
@@ -168,15 +168,36 @@ def run_automated_simulation(game_data, strategy="random"):
                 choice = random.choice(choices)
             
             elif strategy == "conservative":
-                # 보수적 투자 (안정적인 셋째집 선호)
-                weights = {"첫째집": 0.1, "둘째집": 0.3, "셋째집": 0.5, "패스": 0.1}
+                # 보수적 투자 (저위험 종목 선호)
+                stock_names = [stock['name'] for stock in stocks]
+                # 위험도별로 가중치 설정
+                weights = {}
+                for stock in stocks:
+                    if "저위험" in stock.get('risk_level', ''):
+                        weights[stock['name']] = 0.5
+                    elif "중위험" in stock.get('risk_level', ''):
+                        weights[stock['name']] = 0.3
+                    else:  # 고위험
+                        weights[stock['name']] = 0.1
+                weights["패스"] = 0.1
+                
                 choices = list(weights.keys())
                 weights_values = list(weights.values())
                 choice = random.choices(choices, weights=weights_values, k=1)[0]
             
             elif strategy == "aggressive":
-                # 공격적 투자 (고위험 고수익 첫째집 선호)
-                weights = {"첫째집": 0.6, "둘째집": 0.2, "셋째집": 0.1, "패스": 0.1}
+                # 공격적 투자 (고위험 고수익 종목 선호)
+                stock_names = [stock['name'] for stock in stocks]
+                weights = {}
+                for stock in stocks:
+                    if "고위험" in stock.get('risk_level', ''):
+                        weights[stock['name']] = 0.6
+                    elif "중위험" in stock.get('risk_level', ''):
+                        weights[stock['name']] = 0.2
+                    else:  # 저위험
+                        weights[stock['name']] = 0.1
+                weights["패스"] = 0.1
+                
                 choices = list(weights.keys())
                 weights_values = list(weights.values())
                 choice = random.choices(choices, weights=weights_values, k=1)[0]
