@@ -272,7 +272,7 @@ if 'current_turn_index' not in st.session_state:
 if 'player_investments' not in st.session_state:
     st.session_state.player_investments = {}
 if 'player_balance' not in st.session_state:
-    st.session_state.player_balance = 100
+    st.session_state.player_balance = 1000
 if 'investment_history' not in st.session_state:
     st.session_state.investment_history = []
 if 'game_log' not in st.session_state:
@@ -286,28 +286,7 @@ if 'openai_api_key' not in st.session_state:
 
 # 메인 앱 시작
 def main():
-    # 헤더
-    st.markdown("""
-    <div class="main-header">
-        <h1>📈 EduStock</h1>
-        <p style="color: #666; font-size: 1.1rem;">아이들을 위한 쉬운 주식 투자 게임</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # 스텝 인디케이터
-    steps = ['welcome', 'setup', 'game', 'result']
-    step_names = ['시작', '설정', '게임', '결과']
-    
-    st.markdown('<div class="step-indicator">', unsafe_allow_html=True)
-    for i, (step, name) in enumerate(zip(steps, step_names)):
-        if step == st.session_state.current_step:
-            st.markdown(f'<div class="step active">{i+1}</div>', unsafe_allow_html=True)
-        elif steps.index(st.session_state.current_step) > i:
-            st.markdown(f'<div class="step completed">✓</div>', unsafe_allow_html=True)
-        else:
-            st.markdown(f'<div class="step">{i+1}</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-    
+
     # 현재 스텝에 따른 화면 표시
     if st.session_state.current_step == 'welcome':
         show_welcome_screen()
@@ -329,7 +308,7 @@ def show_welcome_screen():
             <h2>🎮 게임 방법</h2>
             <br>
             <div style="text-align: left; margin: 2rem 0;">
-                <p>🎯 <strong>목표:</strong> 100코인으로 시작해서 투자를 통해 돈을 늘려보세요!</p>
+                <p>🎯 <strong>목표:</strong> 1000코인으로 시작해서 투자를 통해 돈을 늘려보세요!</p>
                 <p>📰 <strong>방법:</strong> 매 턴마다 나오는 뉴스를 보고 어떤 주식을 살지 결정하세요</p>
                 <p>💡 <strong>팁:</strong> 뉴스를 잘 읽고 힌트를 활용해보세요</p>
             </div>
@@ -347,7 +326,6 @@ def show_setup_screen():
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
         st.markdown("### 🎭 게임 테마 선택")
         
         # 테마 선택을 카드 형식으로
@@ -365,9 +343,7 @@ def show_setup_screen():
             key="mode_selection"
         )
         
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # API 키 확인
+        # API 키 확인 (카드 안에 포함)
         if not st.session_state.openai_api_key and game_mode == "새 게임 시작":
             st.markdown("""
             <div style="background: #fff3cd; border-radius: 8px; padding: 1rem; margin: 1rem 0;">
@@ -380,12 +356,24 @@ def show_setup_screen():
             if manual_key:
                 st.session_state.openai_api_key = manual_key
         
-        # 다음 단계 버튼
+        # 저장된 게임 불러오기 옵션 (카드 안에 포함)
+        if game_mode == "저장된 게임 불러오기":
+            available_files = get_available_scenarios()
+            if available_files:
+                selected_file = st.selectbox("불러올 게임을 선택하세요:", available_files)
+            else:
+                st.warning("저장된 게임이 없어요. 새 게임을 시작해주세요.")
+        
+        # 다음 단계 버튼 (카드 안에 포함)
+        st.markdown("<br>", unsafe_allow_html=True)  # 여백 추가
+        
+        
+        # 버튼 처리
         if st.button("다음 단계", use_container_width=True):
             if game_mode == "새 게임 시작":
                 if st.session_state.openai_api_key:
                     # 게임 데이터 생성
-                    with st.spinner("🎮 게임 세상을 만들고 있어요..."):
+                    with st.spinner("🎮 게임 세상을 만들고 있어요...(약 1-2분 소요..)"):
                         scenario_type = SCENARIO_TYPES[selected_theme]
                         game_data = generate_game_scenario_data_llm(scenario_type, st.session_state.openai_api_key)
                         
@@ -397,7 +385,7 @@ def show_setup_screen():
                             # 게임 상태 초기화
                             st.session_state.current_turn_index = 0
                             st.session_state.player_investments = {}
-                            st.session_state.player_balance = 100
+                            st.session_state.player_balance = 1000
                             st.session_state.investment_history = []
                             st.session_state.game_log = []
                             st.session_state.game_started = True
@@ -412,28 +400,26 @@ def show_setup_screen():
             else:
                 # 저장된 게임 불러오기
                 available_files = get_available_scenarios()
-                if available_files:
-                    selected_file = st.selectbox("불러올 게임을 선택하세요:", available_files)
-                    if selected_file and st.button("게임 불러오기", use_container_width=True):
-                        game_data = load_scenario_from_file(os.path.join(DATA_DIR, selected_file))
-                        if game_data:
-                            st.session_state.game_data = game_data
-                            
-                            # 게임 상태 초기화
-                            st.session_state.current_turn_index = 0
-                            st.session_state.player_investments = {}
-                            st.session_state.player_balance = 100
-                            st.session_state.investment_history = []
-                            st.session_state.game_log = []
-                            st.session_state.game_started = True
-                            st.session_state.current_step = 'game'
-                            
-                            st.success("게임을 불러왔어요! 🎉")
-                            st.rerun()
-                        else:
-                            st.error("게임 파일을 읽을 수 없어요.")
+                if available_files and 'selected_file' in locals():
+                    game_data = load_scenario_from_file(os.path.join(DATA_DIR, selected_file))
+                    if game_data:
+                        st.session_state.game_data = game_data
+                        
+                        # 게임 상태 초기화
+                        st.session_state.current_turn_index = 0
+                        st.session_state.player_investments = {}
+                        st.session_state.player_balance = 1000
+                        st.session_state.investment_history = []
+                        st.session_state.game_log = []
+                        st.session_state.game_started = True
+                        st.session_state.current_step = 'game'
+                        
+                        st.success("게임을 불러왔어요! 🎉")
+                        st.rerun()
+                    else:
+                        st.error("게임 파일을 읽을 수 없어요.")
                 else:
-                    st.warning("저장된 게임이 없어요. 새 게임을 시작해주세요.")
+                    st.warning("먼저 불러올 게임을 선택해주세요.")
 
 def show_game_screen():
     """게임 화면 - 깔끔하고 직관적"""
@@ -498,9 +484,9 @@ def show_game_screen():
     st.markdown(f"""
     <div class="news-card">
         <h3>📰 이번 턴 소식</h3>
-        <p><strong>결과:</strong> {current_turn_data['result']}</p>
-        <p><strong>뉴스:</strong> {current_turn_data['news']}</p>
-        <p><em>💡 힌트: {current_turn_data['news_hint']}</em></p>
+        <p><strong>결과:</strong> {current_turn_data.get('result', '결과 정보 없음')}</p>
+        <p><strong>뉴스:</strong> {current_turn_data.get('news', '뉴스 정보 없음')}</p>
+        <p><em>💡 힌트: {current_turn_data.get('news_hint', '힌트 정보 없음')}</em></p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -513,16 +499,16 @@ def show_game_screen():
         for stock in current_turn_data['stocks']:
             st.markdown(f"""
             <div class="stock-card">
-                <h4>{stock['name']}</h4>
-                <p style="color: #666;">{stock['description']}</p>
+                <h4>{stock.get('name', '이름 없음')}</h4>
+                <p style="color: #666;">{stock.get('description', '설명 없음')}</p>
                 <div style="display: flex; justify-content: space-between; margin: 1rem 0;">
                     <div>
-                        <strong>{stock['current_value']} 코인</strong>
+                        <strong>{stock.get('current_value', 0)} 코인</strong>
                         <small style="color: #888;">현재 가격</small>
                     </div>
                     <div style="text-align: right;">
-                        <small style="color: #888;">위험도: {stock['risk_level']}</small><br>
-                        <small style="color: #666;">예상: {stock['expectation']}</small>
+                        <small style="color: #888;">위험도: {stock.get('risk_level', '정보 없음')}</small><br>
+                        <small style="color: #666;">예상: {stock.get('expectation', '정보 없음')}</small>
                     </div>
                 </div>
             </div>
@@ -534,7 +520,7 @@ def show_game_screen():
             with col1:
                 st.write(f"현재 보유: {current_shares}주")
             with col2:
-                max_buy = st.session_state.player_balance // stock['current_value']
+                max_buy = st.session_state.player_balance // stock['current_value'] if stock['current_value'] > 0 else 0
                 investment_inputs[stock['name']] = st.number_input(
                     f"매수(+)/매도(-) 수량",
                     min_value=-current_shares,
@@ -638,7 +624,7 @@ def show_result_screen():
         return
     
     final_assets = st.session_state.investment_history[-1]['total_asset_value']
-    initial_assets = 100
+    initial_assets = 1000
     profit = final_assets - initial_assets
     profit_rate = (profit / initial_assets) * 100
     
