@@ -1,9 +1,42 @@
 # 🎭 어린이를 위한 스토리텔링 투자 교육 게임
 
-10세 이하 아동을 위한 AI 기반 투자 교육 플랫폼입니다. OpenAI GPT를 활용하여 아이들이 이해하기 쉬운 동화적 상황을 만들고, 재미있는 이야기를 통해 돈과 투자의 기본 개념을 배울 수 있는 종합 교육 시스템입니다.
+10세 이하 아동을 위한 AI 기반 투자 교육 플랫폼입니다. Google Gemini AI를 활용하여 아이들이 이해하기 쉬운 동화적 상황을 만들고, 재미있는 이야기를 통해 돈과 투자의 기본 개념을 배울 수 있는 종합 교육 시스템입니다.
+
+## 🆕 최근 업데이트
+
+### 🚀 v2.0 주요 변경사항 (2025년 6월)
+
+#### 🤖 AI 엔진 업그레이드
+- **OpenAI GPT → Google Gemini AI**: 더 빠르고 경제적인 AI 모델로 전환
+- **향상된 스토리 품질**: Gemini의 창의적 스토리텔링 능력 활용
+- **안정성 개선**: API 연결 안정성 및 오류 처리 강화
+
+#### 🌐 배포 및 접근성
+- **Streamlit Cloud 지원**: 클라우드 환경에서 웹앱 배포 가능
+- **API 키 관리 개선**: 다양한 환경에서의 설정 방법 제공
+- **반응형 웹 인터페이스**: 모바일/태블릿 친화적 디자인
+
+#### 🎮 게임 시스템 완성
+- **완전한 게임 플로우**: 환영 → 설정 → 게임 → 결과 화면 구현
+- **투자 폼 개선**: 직관적인 매수/매도 인터페이스
+- **결과 분석 강화**: 상세한 투자 성과 분석 및 차트
+- **게임 재시작**: 다양한 재시작 옵션 제공
+
+#### 🛠 기술적 개선
+- **의존성 최적화**: UV 패키지 매니저 완전 지원
+- **오류 처리 강화**: 견고한 예외 처리 및 사용자 안내
+- **성능 최적화**: 메모리 사용량 및 로딩 시간 개선
+
+### 🔄 마이그레이션 가이드
+
+기존 OpenAI 설정을 사용 중이셨다면:
+1. Google AI Studio에서 새 API 키 발급
+2. `.env` 파일의 `OPENAI_API_KEY`를 `GOOGLE_API_KEY`로 변경
+3. `uv sync` 명령으로 새 의존성 설치
 
 ## 📋 목차
 
+- [🆕 최근 업데이트](#-최근-업데이트)
 - [🎨 다양한 테마의 세계관](#-다양한-테마의-세계관)
 - [✨ 주요 기능](#-주요-기능)
 - [🚀 빠른 시작 가이드](#-빠른-시작-가이드)
@@ -53,8 +86,9 @@
 *   **AI 생성 스토리**: 매번 새로운 이야기와 상황으로 무한한 재미
 
 ### 🛠 기술적 기능
-*   **LLM 기반 시나리오 생성**: OpenAI GPT를 활용한 동적 게임 스토리 생성
+*   **LLM 기반 시나리오 생성**: Google Gemini AI를 활용한 동적 게임 스토리 생성
 *   **다중 실행 방법**: CLI, 웹 API, Streamlit 앱 지원
+*   **Streamlit Cloud 배포**: 클라우드 환경에서 웹앱 실행 지원
 *   **자동 투자 시뮬레이션**: 4가지 전략으로 투자 시뮬레이션 자동화
 *   **인터랙티브 게임플레이**: 사용자가 직접 투자 결정을 내리는 대화형 게임
 *   **고급 시각화**: Matplotlib과 Plotly를 활용한 투자 결과 그래프
@@ -78,11 +112,11 @@ source .venv/bin/activate
 uv pip install -r requirements.txt
 ```
 
-### 단계 2: OpenAI API 키 설정
+### 단계 2: Google API 키 설정
 
-다음 방법 중 하나를 선택하여 API 키를 설정하세요:
+다음 방법 중 하나를 선택하여 Google Gemini API 키를 설정하세요:
 
-#### 방법 1: .env 파일 사용 (권장)
+#### 방법 1: .env 파일 사용 (로컬 개발용)
 ```bash
 # .env.example 파일을 복사하여 .env 파일 생성
 cp .env.example .env
@@ -95,25 +129,73 @@ code .env
 
 `.env` 파일 내용:
 ```env
-OPENAI_API_KEY=sk-proj-your-actual-api-key-here
+GOOGLE_API_KEY=your-actual-google-api-key-here
 ```
 
-#### 방법 2: 환경변수 직접 설정
+#### 방법 2: Streamlit Cloud 배포용
+Streamlit Cloud에서 배포할 때는 다음과 같이 설정하세요:
+
+1. Streamlit Cloud 대시보드로 이동
+2. 앱 설정(Settings) → **Secrets** 탭 선택
+3. 다음 형식으로 입력:
+```toml
+GOOGLE_API_KEY = "your-actual-google-api-key-here"
+```
+
+#### 방법 3: 환경변수 직접 설정 (로컬용)
 ```bash
 # 현재 세션에만 적용
-export OPENAI_API_KEY="your-openai-api-key-here"
+export GOOGLE_API_KEY="your-google-api-key-here"
 
 # 영구 적용 (zsh 사용자)
-echo 'export OPENAI_API_KEY="your-openai-api-key-here"' >> ~/.zshrc
+echo 'export GOOGLE_API_KEY="your-google-api-key-here"' >> ~/.zshrc
 source ~/.zshrc
 
 # 영구 적용 (bash 사용자)
-echo 'export OPENAI_API_KEY="your-openai-api-key-here"' >> ~/.bashrc
+echo 'export GOOGLE_API_KEY="your-google-api-key-here"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-#### 방법 3: Streamlit 앱에서 임시 입력
-- Streamlit 앱 실행 후 사이드바에서 직접 입력 가능 (임시용)
+#### 방법 4: Streamlit 앱에서 임시 입력
+- Streamlit 앱 실행 후 게임 설정 화면에서 직접 입력 가능 (임시용)
+
+**🔑 Google API 키 발급 방법:**
+1. [Google AI Studio](https://aistudio.google.com/)에 접속
+2. "Get API key" 버튼 클릭
+3. "Create API key in new project" 선택
+4. 발급받은 API 키를 위의 방법 중 하나로 설정
+#### 방법 2: 환경변수 직접 설정 (로컬용)
+```bash
+# 현재 세션에만 적용
+export GOOGLE_API_KEY="your-google-api-key-here"
+
+# 영구 적용 (zsh 사용자)
+echo 'export GOOGLE_API_KEY="your-google-api-key-here"' >> ~/.zshrc
+source ~/.zshrc
+
+# 영구 적용 (bash 사용자)
+echo 'export GOOGLE_API_KEY="your-google-api-key-here"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+#### 방법 3: Streamlit Cloud 배포용
+Streamlit Cloud에서 배포할 때는 다음과 같이 설정하세요:
+
+1. Streamlit Cloud 대시보드로 이동
+2. 앱 설정(Settings) → **Secrets** 탭 선택
+3. 다음 형식으로 입력:
+```toml
+GOOGLE_API_KEY = "your-actual-google-api-key-here"
+```
+
+#### 방법 4: Streamlit 앱에서 임시 입력
+- Streamlit 앱 실행 후 게임 설정 화면에서 직접 입력 가능 (임시용)
+
+**🔑 Google API 키 발급 방법:**
+1. [Google AI Studio](https://aistudio.google.com/)에 접속
+2. "Get API key" 버튼 클릭
+3. "Create API key in new project" 선택
+4. 발급받은 API 키를 위의 방법 중 하나로 설정
 
 ### 단계 3: 게임 실행
 
@@ -160,7 +242,7 @@ streamlit run src/streamlit_app.py
 
 ### 💻 2. 명령줄 인터페이스 (CLI)
 
-#### 기존 데이터로 빠른 체험 (OpenAI API 키 불필요)
+#### 기존 데이터로 빠른 체험 (Google API 키 불필요)
 ```bash
 # 마법 왕국 스토리로 게임 체험
 python src/main.py --use-existing --input-file data/game_scenario_magic_kingdom_20250525_133010.json --simulate
@@ -175,7 +257,7 @@ python src/main.py --use-existing --input-file data/game_scenario_magic_kingdom_
 python src/main.py --use-existing --input-file data/game_scenario_foodtruck_kingdom_20250525_132903.json --simulate --visualize
 ```
 
-#### 새로운 AI 생성 스토리 (OpenAI API 키 필요)
+#### 새로운 AI 생성 스토리 (Google API 키 필요)
 ```bash
 # 마법 왕국 새 스토리 생성 + 게임 + 시각화
 python src/main.py --scenario-type magic_kingdom --visualize --simulate --save-viz
@@ -274,8 +356,8 @@ jupyter notebook
 
 ### 🐍 백엔드 & AI
 *   **Python 3.8+**: 프로젝트 기반 언어
-*   **OpenAI API (GPT-4o-mini)**: AI 기반 스토리 생성
-*   **LangChain & LangChain-OpenAI**: LLM 연동 및 프롬프트 체인 관리
+*   **Google Gemini AI**: AI 기반 스토리 생성 (이전 OpenAI GPT-4o-mini에서 변경)
+*   **LangChain & LangChain-Google-GenAI**: LLM 연동 및 프롬프트 체인 관리
 *   **FastAPI**: 고성능 웹 API 개발 프레임워크
 *   **Uvicorn**: ASGI 웹 서버
 *   **Pydantic**: 데이터 유효성 검사 및 설정 관리
@@ -287,11 +369,12 @@ jupyter notebook
 *   **Pandas**: 데이터 분석 및 처리
 *   **NumPy**: 수치 계산
 
-### 🛠 개발 도구
+### 🔧 개발 도구
 *   **Jupyter Notebook**: 개발 및 실험 환경
 *   **python-dotenv**: 환경 변수 관리
 *   **UV**: 빠른 파이썬 패키지 관리자
 *   **JSON**: 게임 데이터 저장 형식
+*   **Streamlit Cloud**: 웹앱 클라우드 배포 플랫폼
 
 ### 🔧 아키텍처 특징
 *   **모듈화된 구조**: 각 기능별로 분리된 모듈 설계
@@ -428,7 +511,7 @@ edu_stock_llm/
 ### 🎯 학습 목표별 데이터 활용
 
 **위험도 이해**: 각 투자처마다 다른 위험 수준과 수익 패턴 제공
-**분산 투자**: 여러 투자처에 나누어 투자하는 효과 체험
+**분산 투자**: 여러 곳에 나누어 투자하는 효과 체험
 **시장 분석**: 뉴스와 힌트를 통한 시장 상황 판단 능력 기르기
 **장기 관점**: 10일간의 투자 결과를 통한 장기적 안목 개발
 *   `POST /simulation/run_automated`: 자동 투자 시뮬레이션 실행
@@ -507,7 +590,7 @@ jupyter lab
 
 ### ❓ 자주 묻는 질문 (FAQ)
 
-#### Q1: OpenAI API 키가 없어도 게임을 할 수 있나요?
+#### Q1: Google API 키가 없어도 게임을 할 수 있나요?
 **A:** 네! 기존에 생성된 샘플 데이터로 게임을 체험할 수 있습니다.
 ```bash
 python src/main.py --use-existing --input-file data/game_scenario_magic_kingdom_20250525_133010.json --simulate
@@ -526,25 +609,33 @@ pip install streamlit
 streamlit run src/streamlit_app.py
 ```
 
-#### Q3: "ModuleNotFoundError" 오류가 발생해요.
-**A:** 다음 명령어로 의존성을 다시 설치하세요:
+#### Q3: "ModuleNotFoundError: langchain_google_genai" 오류가 발생해요.
+**A:** Google Generative AI 관련 의존성을 설치하세요:
 ```bash
 # UV 사용하는 경우
-uv pip install -r requirements.txt
+uv sync
 
 # 일반 pip 사용하는 경우  
-pip install -r requirements.txt
+pip install langchain-google-genai google-generativeai
 ```
 
 #### Q4: API 키 오류가 발생해요.
-**A:** API 키 설정을 확인하세요:
+**A:** Google API 키 설정을 확인하세요:
 ```bash
 # .env 파일 확인
 cat .env
 
 # 환경 변수 확인
-echo $OPENAI_API_KEY
+echo $GOOGLE_API_KEY
+
+# Streamlit Cloud에서는 Secrets 설정 확인
 ```
+
+#### Q5: Streamlit Cloud에서 API 키가 인식되지 않아요.
+**A:** Streamlit Cloud의 Secrets 설정을 확인하세요:
+1. 앱 설정 → Secrets 탭
+2. 형식: `GOOGLE_API_KEY = "your-key"`
+3. 앱 재시작 후 테스트
 
 ### 🔧 일반적인 문제 해결
 
@@ -554,7 +645,16 @@ echo $OPENAI_API_KEY
 rm -rf .venv
 uv venv
 source .venv/bin/activate
-uv pip install -r requirements.txt
+uv sync
+```
+
+#### 2. 의존성 불일치 문제 (Google AI 관련)
+```bash
+# Google AI 의존성 설치
+uv add langchain-google-genai google-generativeai
+
+# 또는 pip 사용시
+pip install langchain-google-genai google-generativeai
 ```
 
 #### 2. 포트 충돌 문제
@@ -564,6 +664,15 @@ streamlit run src/streamlit_app.py --server.port 8502
 
 # 다른 포트로 API 서버 실행
 uvicorn src.api:app --port 8001
+```
+
+#### 3. Streamlit Cloud 배포 문제
+```bash
+# 로컬에서 배포 테스트
+streamlit run src/streamlit_app.py
+
+# requirements.txt 확인
+cat requirements.txt | grep langchain-google-genai
 ```
 
 #### 3. 데이터 파일 문제
@@ -590,7 +699,8 @@ chmod +x run_game.sh
 - Python 버전: 3.8 이상 권장
 - 운영체제: macOS, Linux, Windows 지원
 - 메모리: 최소 4GB RAM 권장
-- 인터넷 연결: OpenAI API 사용 시 필요
+- 인터넷 연결: Google Gemini API 사용 시 필요
+- Google API 키: [Google AI Studio](https://aistudio.google.com/)에서 발급
 
 ## ✅ 프로젝트 완성도 및 테스트 현황
 
@@ -598,15 +708,18 @@ chmod +x run_game.sh
 
 #### ✅ 핵심 게임 시스템
 - **다중 세계관**: 마법 왕국, 푸드트럭 왕국, 달빛 도둑 ✅
-- **AI 스토리 생성**: GPT-4o-mini를 활용한 동적 시나리오 생성 ✅
+- **AI 스토리 생성**: Google Gemini AI를 활용한 동적 시나리오 생성 ✅
 - **투자 시뮬레이션**: 4가지 AI 전략 및 인터랙티브 게임 ✅
 - **데이터 관리**: JSON 기반 저장/로드 시스템 ✅
+- **완전한 게임 플로우**: 환영 → 설정 → 게임 → 결과 화면 ✅
 
 #### ✅ 사용자 인터페이스
 - **Streamlit 웹앱**: 직관적인 웹 기반 게임 인터페이스 ✅
+- **클라우드 배포**: Streamlit Cloud 지원으로 어디서나 접근 가능 ✅
 - **CLI 인터페이스**: 명령줄 기반 게임 실행 ✅
 - **RESTful API**: 개발자용 API 서버 ✅
 - **시각화**: Matplotlib & Plotly 기반 차트 ✅
+- **반응형 디자인**: 모바일/태블릿 친화적 인터페이스 ✅
 
 #### ✅ 개발 도구
 - **Jupyter Notebook**: 개발 및 실험 환경 ✅
@@ -634,6 +747,7 @@ chmod +x run_game.sh
 - **메모리 사용**: 일반적인 환경에서 안정적 실행 ✅
 - **오류 복구**: LLM 생성 실패 시 자동 재시도 (최대 3회) ✅
 - **데이터 무결성**: JSON 파싱 오류 방지 및 검증 ✅
+- **클라우드 안정성**: Streamlit Cloud에서 검증된 배포 ✅
 
 ### 🎓 교육적 효과 검증
 
@@ -682,7 +796,7 @@ chmod +x run_game.sh
 
 ## 🙏 감사 인사
 
-- **OpenAI**: GPT-4o-mini 모델을 통한 창의적인 스토리 생성
+- **Google AI**: Gemini 모델을 통한 창의적인 스토리 생성
 - **LangChain**: LLM 연동을 위한 강력한 프레임워크 제공
 - **Streamlit**: 사용자 친화적인 웹 인터페이스 구축 도구
 - **FastAPI**: 고성능 웹 API 개발 프레임워크
