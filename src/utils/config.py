@@ -3,21 +3,27 @@
 """
 import os
 from dotenv import load_dotenv
+import streamlit as st
 
 def load_api_key():
-    """
-    API 키를 환경변수에서 로드합니다.
-    
-    Returns:
-        str: OpenAI API 키
-    """
+    """API 키를 로드하는 함수"""
+    # 1. Streamlit secrets에서 먼저 시도
     try:
-        load_dotenv()
-        api_key = os.getenv("OPENAI_API_KEY")
-        return api_key
+        if hasattr(st, 'secrets') and 'GOOGLE_API_KEY' in st.secrets:
+            return st.secrets['GOOGLE_API_KEY']
     except Exception as e:
-        print(f"API 키 로드 중 오류 발생: {e}")
-        return None
+        print(f"Streamlit secrets 로드 실패: {e}")
+    
+    # 2. 환경변수에서 시도 (로컬 개발용)
+    api_key = os.getenv('GOOGLE_API_KEY')
+    if api_key:
+        return api_key
+    
+    # 3. 세션 상태에서 시도 (수동 입력)
+    if hasattr(st, 'session_state') and 'manual_api_key' in st.session_state:
+        return st.session_state.manual_api_key
+    
+    return None
 
 def get_model_settings():
     """
@@ -27,7 +33,7 @@ def get_model_settings():
         dict: 모델 설정값
     """
     return {
-        "model_name": "gpt-4o-mini",
-        "temperature": 1.05,  # 약간의 창의성을 위해 1.05으로 설정
-        "max_tokens": 4096
+        "model_name": "gemini-2.5-flash-preview-05-20",
+        "temperature": 1.0,  # Gemini의 권장 온도 설정
+        "max_tokens": 65536
     }
