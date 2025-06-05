@@ -3,7 +3,7 @@ LLM 모델 관리 모듈
 """
 import os
 from langchain.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from src.utils.config import load_api_key, get_model_settings
 
@@ -12,19 +12,24 @@ def initialize_llm():
     LLM 모델을 초기화합니다.
     
     Returns:
-        ChatOpenAI: 초기화된 ChatOpenAI 모델
+        ChatGoogleGenerativeAI: 초기화된 ChatGoogleGenerativeAI 모델
     """
+    # 환경 변수 초기화 (캐시 문제 해결)
+    if 'GOOGLE_API_KEY' in os.environ:
+        del os.environ['GOOGLE_API_KEY']
+    
     api_key = load_api_key()
     if not api_key:
-        raise ValueError("API 키를 불러올 수 없습니다.")
+        raise ValueError("Google API 키를 불러올 수 없습니다.")
     
-    os.environ["OPENAI_API_KEY"] = api_key
+    os.environ["GOOGLE_API_KEY"] = api_key
     settings = get_model_settings()
     
-    return ChatOpenAI(
+    return ChatGoogleGenerativeAI(
         model=settings["model_name"],
         temperature=settings["temperature"],
-        max_tokens=settings["max_tokens"]
+        max_tokens=settings["max_tokens"],
+        google_api_key=api_key
     )
 
 def create_prompt_template(system_message, user_template="{question}"):
@@ -48,7 +53,7 @@ def generate_game_data(llm, prompt_template, prompt_content):
     게임 데이터를 생성합니다.
     
     Args:
-        llm (ChatOpenAI): 초기화된 LLM 모델
+        llm (ChatGoogleGenerativeAI): 초기화된 LLM 모델
         prompt_template (ChatPromptTemplate): 프롬프트 템플릿
         prompt_content (str): 프롬프트 내용
         

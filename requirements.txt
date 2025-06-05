@@ -3,8 +3,8 @@ uvicorn[standard]
 pydantic
 python-dotenv
 langchain
-langchain-openai
-openai
+langchain-google-genai
+google-generativeai
 matplotlib
 pandas
 numpy
