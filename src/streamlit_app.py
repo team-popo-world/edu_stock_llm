@@ -51,14 +51,96 @@ def get_custom_css():
 def initialize_session_state():
     """세션 상태 초기화"""
     defaults = {
-        'game_data': None, 'current_turn_index': 0, 'player_investments': {},
-        'player_balance': 1000, 'investment_history': [], 'game_log': [],
-        'game_started': False, 'current_step': 'welcome', 'google_api_key': load_api_key()
+        'game_data': None, 
+        'current_turn_index': 0, 
+        'player_investments': {},
+        'player_balance': 1000, 
+        'investment_history': [], 
+        'game_log': [],
+        'game_started': False, 
+        'current_step': 'welcome'
     }
     
     for key, default_value in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = default_value
+    
+    # API 키는 별도로 처리
+    if 'google_api_key' not in st.session_state:
+        st.session_state.google_api_key = load_api_key()
+
+def show_setup_screen():
+    """설정 화면"""
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        st.markdown("### 🎭 게임 테마 선택")
+        selected_theme = st.radio(
+            "어떤 모험을 시작할까요?",
+            options=list(SCENARIO_TYPES.keys()),
+            index=0
+        )
+        
+        st.markdown("### 🎲 게임 모드")
+        game_mode = st.radio(
+            "게임 모드를 선택하세요",
+            options=["새 게임 시작", "저장된 게임 불러오기"]
+        )
+        
+        # API 키 확인 및 처리
+        current_api_key = st.session_state.get('google_api_key') or load_api_key()
+        
+        if not current_api_key and game_mode == "새 게임 시작":
+            st.warning("⚠️ API 키가 필요합니다.")
+            
+            # API 키 상태 디버깅 정보
+            with st.expander("🔍 API 키 상태 확인"):
+                st.write("Streamlit Secrets 상태:")
+                try:
+                    if hasattr(st, 'secrets'):
+                        st.write("✅ st.secrets 사용 가능")
+                        if 'GOOGLE_API_KEY' in st.secrets:
+                            st.write("✅ GOOGLE_API_KEY가 secrets에 존재")
+                        else:
+                            st.write("❌ GOOGLE_API_KEY가 secrets에 없음")
+                            st.write("사용 가능한 키:", list(st.secrets.keys()))
+                    else:
+                        st.write("❌ st.secrets 사용 불가")
+                except Exception as e:
+                    st.write(f"❌ Secrets 확인 중 오류: {e}")
+                
+                st.write("환경변수 상태:")
+                env_key = os.getenv('GOOGLE_API_KEY')
+                if env_key:
+                    st.write("✅ 환경변수에서 발견")
+                else:
+                    st.write("❌ 환경변수에서 발견되지 않음")
+            
+            # 수동 입력 옵션
+            manual_key = st.text_input("API 키를 직접 입력하세요:", type="password")
+            if manual_key:
+                st.session_state.manual_api_key = manual_key
+                st.session_state.google_api_key = manual_key
+                current_api_key = manual_key
+        
+        # 저장된 게임 불러오기 옵션
+        selected_file = None
+        if game_mode == "저장된 게임 불러오기":
+            available_files = get_available_scenarios()
+            if available_files:
+                selected_file = st.selectbox("불러올 게임을 선택하세요:", available_files)
+            else:
+                st.warning("저장된 게임이 없어요. 새 게임을 시작해주세요.")
+        
+        if st.button("다음 단계", use_container_width=True):
+            # API 키 재확인
+            final_api_key = current_api_key or load_api_key()
+            if game_mode == "새 게임 시작" and not final_api_key:
+                st.error("API 키를 먼저 설정해주세요.")
+            else:
+                st.session_state.google_api_key = final_api_key
+                handle_setup_button(game_mode, selected_theme, selected_file)
+
 
 
 def main():
@@ -102,44 +184,6 @@ def show_welcome_screen():
         if st.button("🚀 게임 시작하기", use_container_width=True):
             st.session_state.current_step = 'setup'
             st.rerun()
-
-
-def show_setup_screen():
-    """설정 화면"""
-    col1, col2, col3 = st.columns([1, 2, 1])
-    
-    with col2:
-        st.markdown("### 🎭 게임 테마 선택")
-        selected_theme = st.radio(
-            "어떤 모험을 시작할까요?",
-            options=list(SCENARIO_TYPES.keys()),
-            index=0
-        )
-        
-        st.markdown("### 🎲 게임 모드")
-        game_mode = st.radio(
-            "게임 모드를 선택하세요",
-            options=["새 게임 시작", "저장된 게임 불러오기"]
-        )
-        
-        # API 키 확인
-        if not st.session_state.google_api_key and game_mode == "새 게임 시작":
-            st.warning("⚠️ API 키가 필요합니다. 환경변수에 GOOGLE_API_KEY를 설정해주세요")
-            manual_key = st.text_input("또는 여기에 직접 입력:", type="password")
-            if manual_key:
-                st.session_state.google_api_key = manual_key
-        
-        # 저장된 게임 불러오기 옵션
-        selected_file = None
-        if game_mode == "저장된 게임 불러오기":
-            available_files = get_available_scenarios()
-            if available_files:
-                selected_file = st.selectbox("불러올 게임을 선택하세요:", available_files)
-            else:
-                st.warning("저장된 게임이 없어요. 새 게임을 시작해주세요.")
-        
-        if st.button("다음 단계", use_container_width=True):
-            handle_setup_button(game_mode, selected_theme, selected_file)
 
 
 def handle_setup_button(game_mode, selected_theme, selected_file):
