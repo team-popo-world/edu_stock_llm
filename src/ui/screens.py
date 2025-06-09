@@ -233,17 +233,17 @@ def _display_final_results(investment_history):
         color = "green" if profit >= 0 else "red"
         icon = "📈" if profit >= 0 else "📉"
         st.markdown(f"""
-        <div class="metric-card">
-            <h3 style="color: {color};">{icon} {profit:+.0f}</h3>
-            <p>수익/손실</p>
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #dee2e6; border-radius: 10px; padding: 1rem; margin: 0.5rem 0; text-align: center;">
+            <h3 style="margin: 0 0 0.5rem 0; color: {color};">{icon} {profit:+.0f}</h3>
+            <p style="margin: 0; color: #6c757d; font-size: 0.9rem;">수익/손실</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col3:
         st.markdown(f"""
-        <div class="metric-card">
-            <h3 style="color: {color};">{profit_rate:+.1f}%</h3>
-            <p>수익률</p>
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #dee2e6; border-radius: 10px; padding: 1rem; margin: 0.5rem 0; text-align: center;">
+            <h3 style="margin: 0 0 0.5rem 0; color: {color};">{profit_rate:+.1f}%</h3>
+            <p style="margin: 0; color: #6c757d; font-size: 0.9rem;">수익률</p>
         </div>
         """, unsafe_allow_html=True)
     

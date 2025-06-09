@@ -11,7 +11,8 @@ DEFAULT_SCENARIO_TYPE = "magic_kingdom"
 SCENARIO_TYPES = {
     "🏰 마법 왕국": "magic_kingdom",
     "🚚 푸드트럭 왕국": "foodtruck_kingdom", 
-    "🌙 달빛 도둑": "moonlight_thief"
+    "🌙 달빛 도둑": "moonlight_thief",
+    "🐷 아기돼지 삼형제": "three_little_pigs"
 }
 
 

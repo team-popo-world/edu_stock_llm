@@ -28,12 +28,16 @@ select_scenario() {
     echo "   - 요리사가 되어 미식 코인으로 투자하는 이야기"
     echo ""
     echo "3) 🌙 달빛 도둑 (moonlight_thief)"
-    echo "   - 암시장 도둑단, 밀수업체, 정보브로커"
-    echo "   - 달빛 도시의 암시장에서 루나 코인으로 투자하는 이야기"
+    echo "   - 달빛 가루 수집, 달조각 목걸이, 달빛 방패"
+    echo "   - 달빛 도둑이 되어 달빛 코인으로 투자하는 이야기"
+    echo ""
+    echo "4) 🐷 아기돼지 삼형제 (three_little_pigs)"
+    echo "   - 첫째 돼지(지푸라기집), 둘째 돼지(나무집), 셋째 돼지(벽돌집)"
+    echo "   - 투자 고문이 되어 건설 코인으로 투자하는 이야기"
     echo ""
     
     while true; do
-        read -p "시나리오를 선택하세요 (1, 2, 또는 3): " scenario_choice
+        read -p "시나리오를 선택하세요 (1, 2, 3, 또는 4): " scenario_choice
         case $scenario_choice in
             1)
                 SCENARIO_TYPE="magic_kingdom"
@@ -50,8 +54,13 @@ select_scenario() {
                 DEFAULT_DATA="data/game_scenario_moonlight_thief_sample.json"
                 break
                 ;;
+            4)
+                SCENARIO_TYPE="three_little_pigs"
+                DEFAULT_DATA="data/game_scenario_three_little_pigs_20250609_162517.json"
+                break
+                ;;
             *)
-                echo "❌ 잘못된 선택입니다. 1, 2, 또는 3을 입력해주세요."
+                echo "❌ 잘못된 선택입니다. 1, 2, 3, 또는 4를 입력해주세요."
                 ;;
         esac
     done

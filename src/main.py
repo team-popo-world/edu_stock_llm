@@ -49,20 +49,26 @@ def select_scenario_type(args):
     print("   - 요리사가 되어 미식 코인으로 투자하는 이야기")
     print()
     print("3) 🌙 달빛 도둑 (moonlight_thief)")
-    print("   - 암시장 도둑단, 밀수업체, 정보브로커")
-    print("   - 달빛 도시의 암시장에서 루나 코인으로 투자하는 이야기")
+    print("   - 달빛 가루 수집, 달조각 목걸이, 달빛 방패")
+    print("   - 달빛 도둑이 되어 달빛 코인으로 투자하는 이야기")
+    print()
+    print("4) 🐷 아기돼지 삼형제 (three_little_pigs)")
+    print("   - 첫째 돼지(지푸라기집), 둘째 돼지(나무집), 셋째 돼지(벽돌집)")
+    print("   - 투자 고문이 되어 건설 코인으로 투자하는 이야기")
     print()
     
     while True:
-        choice = input("시나리오를 선택하세요 (1, 2, 또는 3): ").strip()
+        choice = input("시나리오를 선택하세요 (1, 2, 3, 또는 4): ").strip()
         if choice == "1":
             return "magic_kingdom"
         elif choice == "2":
             return "foodtruck_kingdom"
         elif choice == "3":
             return "moonlight_thief"
+        elif choice == "4":
+            return "three_little_pigs"
         else:
-            print("❌ 잘못된 선택입니다. 1, 2, 또는 3을 입력해주세요.")
+            print("❌ 잘못된 선택입니다. 1, 2, 3, 또는 4를 입력해주세요.")
 
 def generate_pipeline(args):
     """전체 파이프라인을 실행합니다."""
@@ -204,8 +210,8 @@ if __name__ == "__main__":
                         help="시뮬레이션 실행")
     parser.add_argument("--auto-sim", action="store_true", 
                         help="자동화된 시뮬레이션 실행")
-    parser.add_argument("--scenario-type", type=str, choices=["magic_kingdom", "foodtruck_kingdom", "moonlight_thief"], 
-                        help="시나리오 타입 선택 (magic_kingdom, foodtruck_kingdom, 또는 moonlight_thief)")
+    parser.add_argument("--scenario-type", type=str, choices=["magic_kingdom", "foodtruck_kingdom", "moonlight_thief", "three_little_pigs"], 
+                        help="시나리오 타입 선택 (magic_kingdom, foodtruck_kingdom, moonlight_thief, 또는 three_little_pigs)")
     
     args = parser.parse_args()
     

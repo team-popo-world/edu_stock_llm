@@ -52,7 +52,7 @@
 
 ## 🎨 다양한 테마의 세계관
 
-이 프로젝트는 세 가지 독특한 테마로 구성되어 있어, 아이들이 자신의 취향에 맞는 세계관을 선택할 수 있습니다:
+이 프로젝트는 네 가지 독특한 테마로 구성되어 있어, 아이들이 자신의 취향에 맞는 세계관을 선택할 수 있습니다:
 
 ### 🏰 마법 왕국 (Magic Kingdom)
 마법사가 되어 마법 코인으로 투자하는 판타지 세계
@@ -68,20 +68,26 @@
 
 ### 🌙 달빛 도둑 (Moonlight Thief)
 신비로운 달빛 도시의 암시장에서 루나 코인으로 투자하는 스릴 넘치는 세계
-- 🎭 **암시장 도둑단**: 위험하지만 높은 수익을 약속하는 투자
-- 🚢 **밀수업체**: 국경을 넘나드는 위험한 거래
-- 📊 **정보브로커**: 정보를 사고파는 신중한 투자처
+- ✨ **달빛 가루 수집**: 신비로운 달빛 가루를 모으는 마법적 사업 (저위험 - 안정적 수익)
+- 🌙 **달조각 목걸이**: 귀한 달조각으로 만든 장신구 거래 (중위험 - 수요 변동)
+- 🛡️ **달빛 방패**: 강력한 마법 방어구 제작 사업 (고위험 - 높은 잠재 수익)
 
-각 세계관마다 10일간의 흥미진진한 투자 여행이 펼쳐집니다!
+### 🐷 아기돼지 삼형제 (Three Little Pigs)
+건설 투자 고문이 되어 건설 코인으로 투자하는 건축 세계
+- 🏠 **첫째 돼지 (지푸라기집)**: 빠르고 저렴한 건설 방식 (고위험 - 불안정하지만 빠른 수익)
+- 🏘️ **둘째 돼지 (나무집)**: 적당한 비용과 내구성의 균형 (중위험 - 안정적 성장)
+- 🏰 **셋째 돼지 (벽돌집)**: 견고하고 오래가는 건설 투자 (저위험 - 장기적 안정 수익)
+
+각 세계관마다 7일간의 흥미진진한 투자 여행이 펼쳐집니다!
 
 ## ✨ 주요 기능
 
 ### 🎮 게임 기능
-*   **다양한 세계관**: 마법 왕국, 푸드트럭 왕국, 달빛 도둑 중 선택 가능
+*   **다양한 세계관**: 마법 왕국, 푸드트럭 왕국, 달빛 도둑, 아기돼지 삼형제 중 선택 가능
 *   **동화적 스토리텔링**: 아이들이 친숙한 판타지 배경의 재미있는 이야기
 *   **단순화된 투자 개념**: 복잡한 금융 용어 대신 이해하기 쉬운 표현 사용
 *   **3개 투자처**: 각 세계관마다 저위험/중위험/고위험 투자처 제공
-*   **10일 게임 진행**: 짧은 기간으로 집중력 유지 및 완주 가능
+*   **7일 게임 진행**: 짧은 기간으로 집중력 유지 및 완주 가능
 *   **위험과 수익 학습**: 안전한 투자부터 모험 투자까지 단계별 경험
 *   **AI 생성 스토리**: 매번 새로운 이야기와 상황으로 무한한 재미
 
@@ -178,24 +184,11 @@ echo 'export GOOGLE_API_KEY="your-google-api-key-here"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-#### 방법 3: Streamlit Cloud 배포용
-Streamlit Cloud에서 배포할 때는 다음과 같이 설정하세요:
-
-1. Streamlit Cloud 대시보드로 이동
-2. 앱 설정(Settings) → **Secrets** 탭 선택
-3. 다음 형식으로 입력:
-```toml
-GOOGLE_API_KEY = "your-actual-google-api-key-here"
-```
-
-#### 방법 4: Streamlit 앱에서 임시 입력
+#### 방법 3: Streamlit 앱에서 임시 입력
 - Streamlit 앱 실행 후 게임 설정 화면에서 직접 입력 가능 (임시용)
 
 **🔑 Google API 키 발급 방법:**
 1. [Google AI Studio](https://aistudio.google.com/)에 접속
-2. "Get API key" 버튼 클릭
-3. "Create API key in new project" 선택
-4. 발급받은 API 키를 위의 방법 중 하나로 설정
 
 ### 단계 3: 게임 실행
 
@@ -216,10 +209,13 @@ streamlit run src/streamlit_app.py
 
 #### 💻 명령줄에서 직접 실행
 ```bash
+# 아기돼지 삼형제 테마로 새로운 게임 시작
+python src/main.py --scenario-type three_little_pigs --visualize --simulate --save-viz
+
 # 기존 데이터로 빠른 게임 체험
 python src/main.py --use-existing --input-file data/game_scenario_magic_kingdom_20250525_133010.json --simulate
 
-# 새로운 AI 생성 스토리로 게임 (OpenAI API 키 필요)
+# 새로운 AI 생성 스토리로 게임 (Google API 키 필요)
 python src/main.py --visualize --simulate --auto-sim --save-viz
 ```
 
@@ -259,6 +255,9 @@ python src/main.py --use-existing --input-file data/game_scenario_foodtruck_king
 
 #### 새로운 AI 생성 스토리 (Google API 키 필요)
 ```bash
+# 아기돼지 삼형제 새 스토리 생성 + 게임 + 시각화
+python src/main.py --scenario-type three_little_pigs --visualize --simulate --save-viz
+
 # 마법 왕국 새 스토리 생성 + 게임 + 시각화
 python src/main.py --scenario-type magic_kingdom --visualize --simulate --save-viz
 
@@ -281,7 +280,7 @@ python src/main.py --use-existing --input-file data/game_scenario_magic_kingdom_
 **CLI 명령어 옵션 설명:**
 - `--use-existing`: 기존 저장된 게임 데이터 사용
 - `--input-file`: 사용할 게임 데이터 파일 경로
-- `--scenario-type`: 새 스토리 생성 시 세계관 선택 (`magic_kingdom`, `foodtruck_kingdom`, `moonlight_thief`)
+- `--scenario-type`: 새 스토리 생성 시 세계관 선택 (`magic_kingdom`, `foodtruck_kingdom`, `moonlight_thief`, `three_little_pigs`)
 - `--visualize`: 투자 결과를 그래프로 시각화
 - `--simulate`: 대화형 투자 게임 실행
 - `--auto-sim`: 4가지 AI 전략 자동 시뮬레이션
@@ -310,6 +309,11 @@ python -m uvicorn src.api:app --reload --host 0.0.0.0 --port 8000
 
 **API 사용 예시 (curl):**
 ```bash
+# 새로운 아기돼지 삼형제 시나리오 생성
+curl -X POST "http://localhost:8000/scenario/generate" \
+     -H "Content-Type: application/json" \
+     -d '{"scenario_type": "three_little_pigs"}'
+
 # 새로운 마법 왕국 시나리오 생성
 curl -X POST "http://localhost:8000/scenario/generate" \
      -H "Content-Type: application/json" \
@@ -396,7 +400,8 @@ edu_stock_llm/
 ├── 📁 data/                # 🎮 생성된 게임 시나리오 JSON 파일들
 │   ├── game_scenario_magic_kingdom_*.json     # 마법 왕국 시나리오들
 │   ├── game_scenario_foodtruck_kingdom_*.json # 푸드트럭 왕국 시나리오들
-│   └── game_scenario_moonlight_thief_*.json   # 달빛 도둑 시나리오들
+│   ├── game_scenario_moonlight_thief_*.json   # 달빛 도둑 시나리오들
+│   └── game_scenario_three_little_pigs_*.json # 아기돼지 삼형제 시나리오들
 ├── 📁 notebook/            # 📓 개발 및 실험용 노트북
 │   └── langchain.ipynb     # LLM 테스트 및 개발용 노트북
 ├── 📁 src/                 # 🎯 주요 소스 코드
@@ -513,7 +518,7 @@ edu_stock_llm/
 **위험도 이해**: 각 투자처마다 다른 위험 수준과 수익 패턴 제공
 **분산 투자**: 여러 곳에 나누어 투자하는 효과 체험
 **시장 분석**: 뉴스와 힌트를 통한 시장 상황 판단 능력 기르기
-**장기 관점**: 10일간의 투자 결과를 통한 장기적 안목 개발
+**장기 관점**: 7일간의 투자 결과를 통한 장기적 안목 개발
 *   `POST /simulation/run_automated`: 자동 투자 시뮬레이션 실행
 *   `GET /scenarios`: 저장된 모든 게임 시나리오 목록 조회
 
@@ -563,14 +568,14 @@ jupyter lab
 - 📚 **교육적**: 아이들이 투자 원리를 자연스럽게 학습
 - 🎨 **재미있음**: 각 세계관의 흥미진진한 이야기
 - 🎯 **단순함**: 복잡하지 않은 3개 투자처만 관리
-- ⏰ **적절한 길이**: 10일로 집중력을 잃지 않게 구성
+- ⏰ **적절한 길이**: 7일로 집중력을 잃지 않게 구성
 - 🧠 **전략적**: 뉴스와 힌트를 통한 투자 결정 학습
 
 ### 📊 결과 분석 예시
 
 **게임 종료 시 제공되는 정보:**
 ```
-🎉 10일간의 투자 여행이 끝났습니다!
+🎉 7일간의 투자 여행이 끝났습니다!
 
 📈 최종 결과:
 - 초기 자금: 1,000 마법 코인
@@ -648,7 +653,7 @@ source .venv/bin/activate
 uv sync
 ```
 
-#### 2. 의존성 불일치 문제 (Google AI 관련)
+#### 3. 의존성 불일치 문제 (Google AI 관련)
 ```bash
 # Google AI 의존성 설치
 uv add langchain-google-genai google-generativeai
@@ -657,7 +662,7 @@ uv add langchain-google-genai google-generativeai
 pip install langchain-google-genai google-generativeai
 ```
 
-#### 2. 포트 충돌 문제
+#### 4. 포트 충돌 문제
 ```bash
 # 다른 포트로 Streamlit 실행
 streamlit run src/streamlit_app.py --server.port 8502
@@ -666,7 +671,7 @@ streamlit run src/streamlit_app.py --server.port 8502
 uvicorn src.api:app --port 8001
 ```
 
-#### 3. Streamlit Cloud 배포 문제
+#### 5. Streamlit Cloud 배포 문제
 ```bash
 # 로컬에서 배포 테스트
 streamlit run src/streamlit_app.py
@@ -675,7 +680,7 @@ streamlit run src/streamlit_app.py
 cat requirements.txt | grep langchain-google-genai
 ```
 
-#### 3. 데이터 파일 문제
+#### 6. 데이터 파일 문제
 ```bash
 # 데이터 디렉토리 확인
 ls -la data/
@@ -684,7 +689,7 @@ ls -la data/
 python src/main.py --use-existing --input-file data/game_scenario_magic_kingdom_20250525_133010.json --simulate
 ```
 
-#### 4. 권한 문제 (macOS/Linux)
+#### 7. 권한 문제 (macOS/Linux)
 ```bash
 # 실행 권한 부여
 chmod +x run_game.sh
@@ -707,19 +712,21 @@ chmod +x run_game.sh
 ### 🎯 완료된 기능들
 
 #### ✅ 핵심 게임 시스템
-- **다중 세계관**: 마법 왕국, 푸드트럭 왕국, 달빛 도둑 ✅
+- **다중 세계관**: 마법 왕국, 푸드트럭 왕국, 달빛 도둑, 아기돼지 삼형제 ✅
 - **AI 스토리 생성**: Google Gemini AI를 활용한 동적 시나리오 생성 ✅
 - **투자 시뮬레이션**: 4가지 AI 전략 및 인터랙티브 게임 ✅
 - **데이터 관리**: JSON 기반 저장/로드 시스템 ✅
 - **완전한 게임 플로우**: 환영 → 설정 → 게임 → 결과 화면 ✅
+- **교육적 피드백**: 투자 패턴 분석 및 맞춤형 학습 조언 ✅
 
 #### ✅ 사용자 인터페이스
 - **Streamlit 웹앱**: 직관적인 웹 기반 게임 인터페이스 ✅
 - **클라우드 배포**: Streamlit Cloud 지원으로 어디서나 접근 가능 ✅
 - **CLI 인터페이스**: 명령줄 기반 게임 실행 ✅
 - **RESTful API**: 개발자용 API 서버 ✅
-- **시각화**: Matplotlib & Plotly 기반 차트 ✅
+- **시각화**: 아동 친화적 Matplotlib & Plotly 기반 차트 ✅
 - **반응형 디자인**: 모바일/태블릿 친화적 인터페이스 ✅
+- **게임 데이터 관리**: 저장, 불러오기, 기록 보기 기능 ✅
 
 #### ✅ 개발 도구
 - **Jupyter Notebook**: 개발 및 실험 환경 ✅
@@ -727,13 +734,14 @@ chmod +x run_game.sh
 - **오류 처리**: 견고한 예외 처리 및 재시도 로직 ✅
 - **문서화**: 상세한 README 및 API 문서 ✅
 
-### 🧪 테스트 완료 항목
+#### ✅ 테스트 완료 항목
 
 #### ✅ 기능 테스트
-- **모든 시나리오 타입**: 3가지 세계관 모두 정상 작동 확인 ✅
+- **모든 시나리오 타입**: 4가지 세계관 모두 정상 작동 확인 ✅
 - **AI 시뮬레이션**: 4가지 전략 모두 정상 실행 확인 ✅
 - **데이터 처리**: JSON 파싱 및 저장 기능 테스트 완료 ✅
-- **시각화**: 차트 생성 및 저장 기능 검증 완료 ✅
+- **시각화**: 아동 친화적 차트 생성 및 저장 기능 검증 완료 ✅
+- **교육적 피드백**: 투자 패턴 분석 및 맞춤형 조언 시스템 검증 ✅
 
 #### ✅ 사용성 테스트
 - **초보자 친화성**: 비개발자도 쉽게 사용 가능 확인 ✅
