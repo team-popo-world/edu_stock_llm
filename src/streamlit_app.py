@@ -1,4 +1,3 @@
-
 import streamlit as st
 
 # 페이지 설정 (반드시 첫 번째로 실행되어야 함)
@@ -355,6 +354,10 @@ def display_final_results(investment_history):
     
     # 성과 메시지
     display_performance_message(profit)
+    
+    # 교육적 피드백 추가
+    display_educational_feedback()
+    display_educational_feedback()
 
 
 def display_performance_message(profit):
@@ -369,6 +372,115 @@ def display_performance_message(profit):
         st.warning("😅 다음엔 더 잘할 수 있을 거예요!")
 
 
+def display_educational_feedback():
+    """교육적 피드백 표시"""
+    if not st.session_state.investment_history:
+        return
+    
+    st.markdown("### 📚 투자 배우기")
+    
+    # 투자 패턴 분석
+    investment_analysis = analyze_investment_patterns()
+    
+    # 교육적 인사이트 제공
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### 🎯 투자 패턴 분석")
+        if investment_analysis['most_invested_stock']:
+            st.write(f"**가장 많이 투자한 곳**: {investment_analysis['most_invested_stock']}")
+        if investment_analysis['best_performing_stock']:
+            st.write(f"**가장 수익률이 높았던 곳**: {investment_analysis['best_performing_stock']}")
+        if investment_analysis['most_stable_stock']:
+            st.write(f"**가장 안정적이었던 곳**: {investment_analysis['most_stable_stock']}")
+    
+    with col2:
+        st.markdown("#### 💡 투자 교훈")
+        lessons = generate_investment_lessons(investment_analysis)
+        for lesson in lessons:
+            st.write(f"• {lesson}")
+
+
+def analyze_investment_patterns():
+    """투자 패턴 분석"""
+    investment_history = st.session_state.investment_history
+    
+    # 각 종목별 투자 금액 및 수익률 계산
+    stock_investments = {}
+    stock_performance = {}
+    
+    for record in investment_history:
+        for stock_name, shares in record.get('investments', {}).items():
+            if stock_name not in stock_investments:
+                stock_investments[stock_name] = 0
+                stock_performance[stock_name] = []
+            
+            # 투자 금액 누적
+            stock_value = next((s['current_value'] for s in record.get('stocks', []) if s['name'] == stock_name), 0)
+            stock_investments[stock_name] += shares * stock_value
+            
+            # 수익률 기록
+            initial_value = next((s['initial_value'] for s in record.get('stocks', []) if s['name'] == stock_name), 100)
+            if initial_value > 0:
+                return_rate = (stock_value - initial_value) / initial_value * 100
+                stock_performance[stock_name].append(return_rate)
+    
+    # 분석 결과
+    most_invested_stock = max(stock_investments.keys(), key=lambda k: stock_investments[k]) if stock_investments else None
+    
+    # 평균 수익률이 가장 높은 종목
+    avg_performance = {k: sum(v)/len(v) if v else 0 for k, v in stock_performance.items()}
+    best_performing_stock = max(avg_performance.keys(), key=lambda k: avg_performance[k]) if avg_performance else None
+    
+    # 가장 안정적인 종목 (변동성이 낮은 종목)
+    stock_volatility = {k: max(v) - min(v) if v else float('inf') for k, v in stock_performance.items()}
+    most_stable_stock = min(stock_volatility.keys(), key=lambda k: stock_volatility[k]) if stock_volatility else None
+    
+    return {
+        'most_invested_stock': most_invested_stock,
+        'best_performing_stock': best_performing_stock,
+        'most_stable_stock': most_stable_stock,
+        'stock_investments': stock_investments,
+        'avg_performance': avg_performance,
+        'stock_volatility': stock_volatility
+    }
+
+
+def generate_investment_lessons(analysis):
+    """투자 교훈 생성"""
+    lessons = []
+    
+    # 분산투자 교훈
+    stock_investments = analysis['stock_investments']
+    if stock_investments:
+        total_investment = sum(stock_investments.values())
+        max_investment_ratio = max(stock_investments.values()) / total_investment if total_investment > 0 else 0
+        
+        if max_investment_ratio > 0.7:
+            lessons.append("한 곳에 너무 많이 투자했어요. 여러 곳에 나누어 투자하면 더 안전해요!")
+        elif max_investment_ratio < 0.4:
+            lessons.append("여러 곳에 골고루 투자해서 위험을 줄였어요! 👍")
+    
+    # 수익률 교훈
+    avg_performance = analysis['avg_performance']
+    if avg_performance:
+        best_stock = analysis['best_performing_stock']
+        worst_stock = min(avg_performance.keys(), key=lambda k: avg_performance[k])
+        
+        if best_stock and worst_stock and best_stock != worst_stock:
+            lessons.append(f"{best_stock}이 가장 좋은 성과를 보였네요. 뉴스를 잘 읽고 투자한 결과예요!")
+    
+    # 안정성 교훈
+    most_stable = analysis['most_stable_stock']
+    if most_stable:
+        lessons.append(f"{most_stable}은 변동이 적어서 안전한 투자였어요. 안정적인 투자의 중요성을 배웠네요!")
+    
+    if not lessons:
+        lessons.append("투자는 경험을 통해 배우는 것이에요. 다음에는 더 잘할 수 있을 거예요!")
+    
+    return lessons
+
+
 def display_investment_chart(investment_history):
     """투자 히스토리 차트 표시"""
     if len(investment_history) > 1:
@@ -380,6 +492,11 @@ def display_investment_chart(investment_history):
 
 def display_restart_buttons():
     """재시작 버튼들 표시"""
+    # 게임 데이터 관리 기능 추가
+    display_game_data_management()
+    
+    st.markdown("---")
+    
     col1, col2 = st.columns(2)
     
     with col1:
@@ -395,5 +512,103 @@ def display_restart_buttons():
             st.rerun()
 
 
-if __name__ == "__main__":
-    main()
+def display_game_data_management():
+    """게임 데이터 관리 기능 표시"""
+    st.markdown("### 💾 게임 데이터 관리")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("📊 게임 기록 보기", use_container_width=True):
+            show_game_history()
+    
+    with col2:
+        if st.button("💾 현재 게임 저장", use_container_width=True):
+            save_current_game()
+    
+    with col3:
+        if st.button("🗑️ 데이터 정리", use_container_width=True):
+            show_data_cleanup_options()
+
+
+def show_game_history():
+    """게임 기록 보기"""
+    st.markdown("#### 📊 게임 기록")
+    
+    investment_history = st.session_state.get('investment_history', [])
+    game_log = st.session_state.get('game_log', [])
+    
+    if investment_history:
+        st.markdown("**투자 기록:**")
+        for i, record in enumerate(investment_history, 1):
+            with st.expander(f"턴 {i} - 총 자산: {record.get('total_asset_value', 0):.0f}"):
+                st.json(record)
+    
+    if game_log:
+        st.markdown("**게임 로그:**")
+        for log_entry in game_log[-5:]:  # 최근 5개만 표시
+            st.text(log_entry)
+
+
+def save_current_game():
+    """현재 게임 저장"""
+    if not st.session_state.game_data:
+        st.warning("저장할 게임 데이터가 없습니다.")
+        return
+    
+    try:
+        from datetime import datetime
+        import json
+        import os
+        
+        # 저장할 데이터 구성
+        save_data = {
+            'game_data': st.session_state.game_data,
+            'current_turn_index': st.session_state.current_turn_index,
+            'player_investments': st.session_state.player_investments,
+            'player_balance': st.session_state.player_balance,
+            'investment_history': st.session_state.investment_history,
+            'game_log': st.session_state.game_log,
+            'saved_at': datetime.now().isoformat()
+        }
+        
+        # 파일명 생성
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"saved_game_{timestamp}.json"
+        filepath = os.path.join("data", filename)
+        
+        # 파일 저장
+        os.makedirs("data", exist_ok=True)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(save_data, f, ensure_ascii=False, indent=2)
+        
+        st.success(f"게임이 저장되었습니다: {filename}")
+        
+    except Exception as e:
+        st.error(f"저장 중 오류가 발생했습니다: {str(e)}")
+
+
+def show_data_cleanup_options():
+    """데이터 정리 옵션 표시"""
+    st.markdown("#### 🗑️ 데이터 정리")
+    
+    st.warning("⚠️ 주의: 데이터 삭제는 복구할 수 없습니다.")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("현재 게임 초기화", use_container_width=True):
+            if st.session_state.get('confirm_reset'):
+                reset_game_state()
+                st.success("게임이 초기화되었습니다.")
+                st.session_state.confirm_reset = False
+                st.rerun()
+            else:
+                st.session_state.confirm_reset = True
+                st.warning("한 번 더 클릭하면 게임이 초기화됩니다.")
+    
+    with col2:
+        st.info("저장된 게임 파일을 정리하려면 data/ 폴더를 직접 확인하세요.")
+
+
+# ...existing code...

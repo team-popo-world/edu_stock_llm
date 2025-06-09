@@ -56,7 +56,7 @@ select_scenario() {
                 ;;
             4)
                 SCENARIO_TYPE="three_little_pigs"
-                DEFAULT_DATA="data/game_scenario_three_little_pigs_sample.json"
+                DEFAULT_DATA="data/game_scenario_three_little_pigs_20250609_162517.json"
                 break
                 ;;
             *)

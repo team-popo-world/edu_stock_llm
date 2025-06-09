@@ -83,51 +83,72 @@ def _create_stock_plot(turns, stock_values, df, game_data):
     """
     # 폰트 설정 - 한글 표시 문제 회피
     plt.rcParams['font.family'] = ['Arial', 'Helvetica', 'DejaVu Sans', 'sans-serif']
+    plt.rcParams['font.size'] = 12
     
-    # 색상 팔레트 정의
-    colors = ['gold', 'brown', 'firebrick', 'green', 'purple', 'orange', 'pink', 'cyan']
+    # 아동 친화적 색상 팔레트 정의 (밝고 명확한 색상)
+    child_friendly_colors = ['#FFB6C1', '#87CEEB', '#98FB98', '#F0E68C', '#DDA0DD', '#FFA07A', '#87CEFA', '#F5DEB3']
     
     # 시각화
-    fig = plt.figure(figsize=(12, 6))
+    fig = plt.figure(figsize=(14, 8))
     
     # 각 주식에 대해 동적으로 플롯 생성
     stock_names = list(stock_values.keys())
     for i, stock_name in enumerate(stock_names):
-        color = colors[i % len(colors)]  # 색상 순환 사용
-        plt.plot(df['Turn'], df[stock_name], 'o-', color=color, label=stock_name)
+        color = child_friendly_colors[i % len(child_friendly_colors)]
+        
+        # 더 굵은 선과 큰 마커로 시각적 강조
+        plt.plot(df['Turn'], df[stock_name], 'o-', color=color, 
+                label=stock_name, linewidth=3, markersize=8, alpha=0.8)
     
     # 초기 가치 기준선 추가
-    plt.axhline(y=100, color='gray', linestyle='--', alpha=0.7, label='Initial Value')
+    plt.axhline(y=100, color='gray', linestyle='--', alpha=0.7, 
+                linewidth=2, label='처음 시작 가격')
     
-    # 시나리오에 따른 제목 설정
-    scenario_title = "Stock Game"  # 기본 제목
+    # 시나리오에 따른 제목 설정 (아동 친화적으로 수정)
+    scenario_title = "🎮 우리의 투자 모험"  # 기본 제목
     if game_data and len(game_data) > 0:
         # 첫 번째 턴의 데이터에서 시나리오 정보 추출 시도
         first_turn = game_data[0]
         if 'scenario' in first_turn:
-            scenario_title = first_turn['scenario']
-        elif len(stock_names) >= 3 and any("House" in name for name in stock_names):
-            scenario_title = "Three Little Pigs Corporation"
-        elif any("Kingdom" in name for name in stock_names):
-            scenario_title = "Kingdom Stock Market"
+            scenario_title = f"🎮 {first_turn['scenario']} 모험"
+        elif len(stock_names) >= 3:
+            if any("돼지" in name or "집" in name for name in stock_names):
+                scenario_title = "🏠 아기돼지 삼형제의 건설 모험"
+            elif any("빵" in name or "서커스" in name for name in stock_names):
+                scenario_title = "🏰 마법 왕국의 투자 모험"
+            elif any("트럭" in name or "푸드" in name for name in stock_names):
+                scenario_title = "🚚 푸드트럭 왕국의 맛있는 모험"
+            elif any("달" in name for name in stock_names):
+                scenario_title = "🌙 달빛 도둑의 신비한 모험"
     
-    # 그래프 꾸미기
-    plt.title(f'{scenario_title} - Stock Value Changes by Turn', fontsize=16)
-    plt.xlabel('Turn', fontsize=12)
-    plt.ylabel('Stock Value', fontsize=12)
-    plt.xticks(turns)
-    plt.grid(True, alpha=0.3)
-    plt.legend()
+    # 그래프 꾸미기 (아동 친화적)
+    plt.title(scenario_title, fontsize=18, fontweight='bold', pad=20)
+    plt.xlabel('🗓️ 게임 날짜 (일차)', fontsize=14, fontweight='bold')
+    plt.ylabel('💰 투자 가치 (코인)', fontsize=14, fontweight='bold')
+    plt.xticks(turns, fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.grid(True, alpha=0.3, linestyle='-', linewidth=1)
     
-    # 중요 이벤트 표시
+    # 범례를 더 보기 좋게
+    legend = plt.legend(loc='upper left', fontsize=12, framealpha=0.9, 
+                       fancybox=True, shadow=True)
+    legend.get_frame().set_facecolor('white')
+    
+    # 배경을 부드럽게
+    ax = plt.gca()
+    ax.set_facecolor('#f8f9fa')
+    
+    # 중요 이벤트 표시 (더 아이들이 이해하기 쉽게)
+    event_y_position = max([max(values) for values in stock_values.values()]) * 1.1
     for turn in game_data:
         if 'event_description' in turn and turn.get('event_description') != "없음":
-            plt.annotate(f"Event: Turn {turn.get('turn_number', 0)}", 
-                         xy=(turn.get('turn_number', 0), 50),
-                         xytext=(turn.get('turn_number', 0), 20),
-                         arrowprops=dict(facecolor='black', shrink=0.05, width=1.5),
-                         fontsize=9,
-                         horizontalalignment='center')
+            plt.annotate(f"📢 특별한 일이 일어났어요!", 
+                         xy=(turn.get('turn_number', 0), event_y_position),
+                         xytext=(turn.get('turn_number', 0), event_y_position + 20),
+                         arrowprops=dict(facecolor='red', shrink=0.05, width=2, alpha=0.7),
+                         fontsize=10, fontweight='bold',
+                         horizontalalignment='center',
+                         bbox=dict(boxstyle="round,pad=0.3", facecolor='yellow', alpha=0.8))
     
     plt.tight_layout()
     return fig
