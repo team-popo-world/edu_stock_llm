@@ -37,7 +37,7 @@ app.add_middleware(
 
 # --- Pydantic 모델 정의 ---
 class ScenarioParameters(BaseModel):
-    scenario_type: str = Field(default="magic_kingdom", description="시나리오 타입 (magic_kingdom, foodtruck_kingdom, 또는 moonlight_thief)")
+    scenario_type: str = Field(default="magic_kingdom", description="시나리오 타입 (magic_kingdom, foodtruck_kingdom, moonlight_thief, 또는 three_little_pigs)")
 
 class SimulationRequest(BaseModel):
     scenario_id: str = Field(..., description="시뮬레이션을 실행할 시나리오 ID (파일명)")
@@ -178,7 +178,12 @@ async def get_scenario_types():
             {
                 "id": "moonlight_thief",
                 "name": "🌙 달빛 도둑",
-                "description": "암시장 도둑단, 밀수업체, 정보브로커 - 달빛 도시의 암시장에서 루나 코인으로 투자하는 이야기"
+                "description": "달빛 가루 수집, 달조각 목걸이, 달빛 방패 - 달빛 도둑이 되어 달빛 코인으로 투자하는 이야기"
+            },
+            {
+                "id": "three_little_pigs",
+                "name": "🐷 아기돼지 삼형제",
+                "description": "첫째 돼지(지푸라기집), 둘째 돼지(나무집), 셋째 돼지(벽돌집) - 투자 고문이 되어 건설 코인으로 투자하는 이야기"
             }
         ]
     }
