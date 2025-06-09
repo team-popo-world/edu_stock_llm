@@ -58,7 +58,7 @@ def get_game_scenario_prompt1():
             각 상점의 첫 'before_value'와 'current_value'는 100으로 시작하며, 이후 'current_value'는 시장 상황에 따라 변동됩니다.
 
             ### 1. 🍞 빵집
-            - **JSON name**: "빵집"
+            - **JSON name**: "🍞 빵집"
             - **JSON risk_level**: "저위험"
             - **특징**: 마을 사람들이 매일 필요로 하는 빵을 만드는 곳. 안정적이지만 큰 수익은 기대하기 어려움.
             - **위험도**: ⭐ (낮음)
@@ -66,7 +66,7 @@ def get_game_scenario_prompt1():
             - **설명**: "매일 필요한 빵이라 안전하지만, 큰 부자는 되기 어려워요."
 
             ### 2. 🎪 서커스단
-            - **JSON name**: "서커스단"
+            - **JSON name**: "🎪 서커스단"
             - **JSON risk_level**: "중위험"
             - **특징**: 가끔 마을에 와서 공연하는 유명한 서커스단. 날씨나 시즌, 특별 이벤트에 따라 수익 변동.
             - **위험도**: ⭐⭐⭐ (보통)
@@ -74,7 +74,7 @@ def get_game_scenario_prompt1():
             - **설명**: "인기가 많으면 대박이지만, 날씨가 안 좋거나 재미없으면 손님이 없어요."
 
             ### 3. 🔮 마법연구소
-            - **JSON name**: "마법연구소"
+            - **JSON name**: "🔮 마법연구소"
             - **JSON risk_level**: "고위험"
             - **특징**: 새로운 마법을 개발하는 신비한 연구소. 대발명 시 큰 수익이지만 실패하거나 부정적 뉴스 발생 시 큰 손실 가능.
             - **위험도**: ⭐⭐⭐⭐⭐ (높음)
@@ -95,7 +95,7 @@ def get_game_scenario_prompt1():
                 "news_tag": "[1턴의 뉴스가 각 상점에 미칠 영향에 대한 아이들이 이해하기 쉬운 힌트 - 예: 축제에는 사람들이 많이 모여 빵도 많이 사 먹고, 서커스도 인기겠지만, 마법연구소는 조용할지도 몰라요!]",
                 "stocks": [
                   {
-                    "name": "빵집",
+                    "name": "🍞 빵집",
                     "description": "마을 사람들이 매일 필요로 하는 빵을 만드는 곳",
                     "before_value": 100,
                     "current_value": 100,
@@ -103,7 +103,7 @@ def get_game_scenario_prompt1():
                     "expectation": "[1턴 뉴스 기반의 다음 턴 예상 - 예: 축제 덕분에 빵 판매가 늘어날 것 같아요!]"
                   },
                   {
-                    "name": "서커스단",
+                    "name": "🎪 서커스단",
                     "description": "가끔 마을에 와서 공연하는 유명한 서커스단",
                     "before_value": 100,
                     "current_value": 100,
@@ -111,7 +111,7 @@ def get_game_scenario_prompt1():
                     "expectation": "[1턴 뉴스 기반의 다음 턴 예상 - 예: 축제 기간 동안 서커스 인기가 최고일 거예요!]"
                   },
                   {
-                    "name": "마법연구소",
+                    "name": "🔮 마법연구소",
                     "description": "새로운 마법을 개발하는 신비한 연구소",
                     "before_value": 100,
                     "current_value": 100,
@@ -127,7 +127,7 @@ def get_game_scenario_prompt1():
                 "news_tag": "[2턴 뉴스의 영향 힌트 - 예: 사람들이 아프면 빵은 더 필요할 수 있지만, 서커스나 마법 연구는 어려워질 수 있어요!]",
                 "stocks": [
                   {
-                    "name": "빵집",
+                    "name": "🍞 빵집",
                     "description": "마을 사람들이 매일 필요로 하는 빵을 만드는 곳",
                     "before_value": 100,
                     "current_value": "[1턴 결과가 반영된 값, 예: 105]",
@@ -135,7 +135,7 @@ def get_game_scenario_prompt1():
                     "expectation": "[2턴 뉴스 기반 예상 - 예: 아픈 사람들에게 빵은 필수품이죠!]"
                   },
                   {
-                    "name": "서커스단",
+                    "name": "🎪 서커스단",
                     "description": "가끔 마을에 와서 공연하는 유명한 서커스단",
                     "before_value": 100,
                     "current_value": "[1턴 결과가 반영된 값, 예: 108]",
@@ -143,7 +143,7 @@ def get_game_scenario_prompt1():
                     "expectation": "[2턴 뉴스 기반 예상 - 예: 전염병이 돌면 서커스 공연은 위험해요!]"
                   },
                   {
-                    "name": "마법연구소",
+                    "name": "🔮 마법연구소",
                     "description": "새로운 마법을 개발하는 신비한 연구소",
                     "before_value": 100,
                     "current_value": "[1턴 결과가 반영된 값, 예: 101]",
@@ -210,7 +210,7 @@ def get_game_scenario_prompt2():
             각 트럭의 첫 'before_value'와 'current_value'는 100으로 시작하며, 이후 'current_value'는 시장 상황에 따라 변동됩니다.
 
             ### 1. 🥪 샌드위치 트럭
-            - **JSON name**: "샌드위치 트럭"
+            - **JSON name**: "🥪 샌드위치 트럭"
             - **JSON risk_level**: "저위험"
             - **특징**: 언제나 필요한 기본 식사를 제공하는 든든한 푸드트럭. 안정적이지만 큰 수익은 기대하기 어려움.
             - **위험도**: ⭐ (낮음)
@@ -218,7 +218,7 @@ def get_game_scenario_prompt2():
             - **설명**: "매일 필요한 샌드위치라 안전하지만, 큰 부자는 되기 어려워요."
 
             ### 2. 🍦 아이스크림 트럭
-            - **JSON name**: "아이스크림 트럭"
+            - **JSON name**: "🍦 아이스크림 트럭"
             - **JSON risk_level**: "중위험"
             - **특징**: 시원하고 달콤한 아이스크림을 파는 인기 푸드트럭. 날씨나 계절, 특별 이벤트에 따라 수익 변동.
             - **위험도**: ⭐⭐⭐ (보통)
@@ -247,7 +247,7 @@ def get_game_scenario_prompt2():
                 "news_tag": "[1턴의 뉴스가 각 트럭에 미칠 영향에 대한 아이들이 이해하기 쉬운 힌트 - 예: 축제에는 사람들이 많이 모여 모든 트럭이 인기겠지만, 특히 아이스크림은 날씨가 더우면 최고일 거예요!]",
                 "stocks": [
                   {
-                    "name": "샌드위치 트럭",
+                    "name": "🥪 샌드위치 트럭",
                     "description": "언제나 필요한 기본 식사를 제공하는 든든한 푸드트럭",
                     "before_value": 100,
                     "current_value": 100,
@@ -255,7 +255,7 @@ def get_game_scenario_prompt2():
                     "expectation": "[1턴 뉴스 기반의 다음 턴 예상 - 예: 축제 덕분에 샌드위치 판매가 늘어날 것 같아요!]"
                   },
                   {
-                    "name": "아이스크림 트럭",
+                    "name": "🍦 아이스크림 트럭",
                     "description": "시원하고 달콤한 아이스크림을 파는 인기 푸드트럭",
                     "before_value": 100,
                     "current_value": 100,
@@ -263,7 +263,7 @@ def get_game_scenario_prompt2():
                     "expectation": "[1턴 뉴스 기반의 다음 턴 예상 - 예: 축제 기간, 특히 더운 날엔 아이스크림 인기가 폭발할 거예요!]"
                   },
                   {
-                    "name": "퓨전 타코 트럭",
+                    "name": "🌮 퓨전 타코 트럭",
                     "description": "새롭고 독특한 퓨전 요리에 도전하는 모험적인 푸드트럭",
                     "before_value": 100,
                     "current_value": 100,
@@ -279,7 +279,7 @@ def get_game_scenario_prompt2():
                 "news_tag": "[2턴 뉴스의 영향 힌트 - 예: 평론가가 어떤 트럭을 좋아할지는 아무도 몰라요! 칭찬하면 대박, 혹평하면 쪽박!]",
                 "stocks": [
                   {
-                    "name": "샌드위치 트럭",
+                    "name": "🥪 샌드위치 트럭",
                     "description": "언제나 필요한 기본 식사를 제공하는 든든한 푸드트럭",
                     "before_value": 100,
                     "current_value": "[1턴 결과가 반영된 값, 예: 104]",
@@ -287,7 +287,7 @@ def get_game_scenario_prompt2():
                     "expectation": "[2턴 뉴스 기반 예상 - 예: 평론가도 든든한 샌드위치는 좋아할 거예요.]"
                   },
                   {
-                    "name": "아이스크림 트럭",
+                    "name": "🍦 아이스크림 트럭",
                     "description": "시원하고 달콤한 아이스크림을 파는 인기 푸드트럭",
                     "before_value": 100,
                     "current_value": "[1턴 결과가 반영된 값, 예: 107]",
@@ -295,7 +295,7 @@ def get_game_scenario_prompt2():
                     "expectation": "[2턴 뉴스 기반 예상 - 예: 특별한 아이스크림이 평론가의 입맛을 사로잡을 수 있을까요?]"
                   },
                   {
-                    "name": "퓨전 타코 트럭",
+                    "name": "🌮 퓨전 타코 트럭",
                     "description": "새롭고 독특한 퓨전 요리에 도전하는 모험적인 푸드트럭",
                     "before_value": 100,
                     "current_value": "[1턴 결과가 반영된 값, 예: 102]",
@@ -362,16 +362,16 @@ def get_game_scenario_prompt3():
     ## 💎 투자 가능한 3개 달빛 보물 작전 (JSON의 'stocks' 항목으로 표현)
     각 작전의 첫 'before_value'와 'current_value'는 100으로 시작하며, 이후 'current_value'는 작전의 성공에 따라 변동됩니다.
 
-    ### 1. 🌙 달빛 가루 수집 작전
-    - **JSON name**: "달빛 가루 수집 작전"
+    ### 1. ✨ 달빛 가루 수집 작전
+    - **JSON name**: "✨ 달빛 가루 수집 작전"
     - **JSON description**: "작지만 매일 모을 수 있어서 안전해요! 들킬 위험이 거의 없어요!"
     - **JSON risk_level**: "저위험"
     - **특징**: 가볍고 숨기기 쉬운 달빛 가루를 모으기. 작고 가벼워서 들키기 어렵고, 매일 조금씩 모을 수 있음.
     - **위험도**: ⭐ (낮음)
     - **수익/손실 범위**: 작지만 꾸준함 (예: +1% ~ +5% 성공, -0% ~ -2% 실패)
 
-    ### 2. ✨ 달조각 목걸이 훔치기 작전
-    - **JSON name**: "달조각 목걸이 훔치기 작전"
+    ### 2. 🌙 달조각 목걸이 훔치기 작전
+    - **JSON name**: "🌙 달조각 목걸이 훔치기 작전"
     - **JSON description**: "예쁘고 값어치 있지만, 가끔 경비병에게 들킬 수도 있어요"
     - **JSON risk_level**: "중위험"
     - **특징**: 은은한 빛이 나는 중간 크기의 달조각 목걸이. 귀족들이 가끔 착용하는 보석으로 적당한 가치와 위험.
@@ -379,7 +379,7 @@ def get_game_scenario_prompt3():
     - **수익/손실 범위**: 중간 정도의 변동 (예: +3% ~ +8% 성공, -1% ~ -5% 실패)
 
     ### 3. 🛡️ 달빛 방패 강탈 작전
-    - **JSON name**: "달빛 방패 강탈 작전"
+    - **JSON name**: "🛡️ 달빛 방패 강탈 작전"
     - **JSON description**: "성공하면 엄청난 부자가 되지만, 실패하면 감옥에 갈 수도 있어요!"
     - **JSON risk_level**: "고위험"
     - **특징**: 크고 반짝이는 전설의 달빛 방패. 왕궁에 보관된 최고급 보물로 엄청난 가치이지만 매우 위험.
@@ -401,7 +401,7 @@ def get_game_scenario_prompt3():
         "news_tag": "[뉴스가 어떤 작전에게 주로 영향을 주는지 - 'all'(모든 작전), 'high'(고위험), 'mid'(중위험), 'low'(저위험), 또는 빈 문자열]",
         "stocks": [
           {
-            "name": "달빛 가루 수집 작전",
+            "name": "✨ 달빛 가루 수집 작전",
             "description": "작지만 매일 모을 수 있어서 안전해요! 들킬 위험이 거의 없어요!",
             "before_value": 100,
             "current_value": 100,
@@ -409,7 +409,7 @@ def get_game_scenario_prompt3():
             "expectation": "[1턴 뉴스 기반의 다음 턴 예상 - 예: 보름달 덕분에 달빛 가루가 더 반짝일 거예요!]"
           },
           {
-            "name": "달조각 목걸이 훔치기 작전",
+            "name": "🌙 달조각 목걸이 훔치기 작전",
             "description": "예쁘고 값어치 있지만, 가끔 경비병에게 들킬 수도 있어요",
             "before_value": 100,
             "current_value": 100,
@@ -417,7 +417,7 @@ def get_game_scenario_prompt3():
             "expectation": "[1턴 뉴스 기반의 다음 턴 예상 - 예: 밝은 달빛 때문에 목걸이가 더 예쁘지만 들킬 수도 있어요!]"
           },
           {
-            "name": "달빛 방패 강탈 작전",
+            "name": "🛡️ 달빛 방패 강탈 작전",
             "description": "성공하면 엄청난 부자가 되지만, 실패하면 감옥에 갈 수도 있어요!",
             "before_value": 100,
             "current_value": 100,
@@ -433,7 +433,7 @@ def get_game_scenario_prompt3():
         "news_tag": "[뉴스가 어떤 작전에게 주로 영향을 주는지]",
         "stocks": [
           {
-            "name": "달빛 가루 수집 작전",
+            "name": "✨ 달빛 가루 수집 작전",
             "description": "작지만 매일 모을 수 있어서 안전해요! 들킬 위험이 거의 없어요!",
             "before_value": 100,
             "current_value": "[1턴 결과가 반영된 값, 예: 102]",
@@ -441,7 +441,7 @@ def get_game_scenario_prompt3():
             "expectation": "[2턴 뉴스 기반 예상 - 예: 경비병이 없어서 더 많은 달빛 가루를 모을 수 있을 거예요!]"
           },
           {
-            "name": "달조각 목걸이 훔치기 작전",
+            "name": "🌙 달조각 목걸이 훔치기 작전",
             "description": "예쁘고 값어치 있지만, 가끔 경비병에게 들킬 수도 있어요",
             "before_value": 100,
             "current_value": "[1턴 결과가 반영된 값, 예: 104]",
@@ -449,7 +449,7 @@ def get_game_scenario_prompt3():
             "expectation": "[2턴 뉴스 기반 예상 - 예: 경비병이 없어서 목걸이를 훔치기 좋은 기회예요!]"
           },
           {
-            "name": "달빛 방패 강탈 작전",
+            "name": "🛡️ 달빛 방패 강탈 작전",
             "description": "성공하면 엄청난 부자가 되지만, 실패하면 감옥에 갈 수도 있어요!",
             "before_value": 100,
             "current_value": "[1턴 결과가 반영된 값, 예: 98]",
@@ -517,23 +517,23 @@ def get_game_scenario_prompt4():
     ## 🐷 투자 가능한 3마리 아기돼지 (JSON의 'stocks' 항목으로 표현)
     각 돼지의 첫 'before_value'와 'current_value'는 100으로 시작하며, 이후 'current_value'는 집 짓기 진행 상황에 따라 변동됩니다.
 
-    ### 1. 🏚️ 첫째 돼지 (지푸라기 집)
-    - **JSON name**: "첫째 돼지"
+    ### 1. 🌾 첫째 돼지 (지푸라기 집)
+    - **JSON name**: "🌾 첫째 돼지"
     - **JSON description**: "지푸라기로 집을 가장 빠르게 짓습니다."
     - **JSON risk_level**: "고위험 고수익"
     - **특징**: 지푸라기로 빠르게 집을 짓는 전략. 빨리 완성되지만 튼튼하지 않아서 위험함.
     - **위험도**: ⭐⭐⭐⭐⭐ (높음)
     - **수익/손실 범위**: 큰 폭으로 변동 (예: +10% ~ +20% 성공, -5% ~ -15% 실패)
 
-    ### 2. 🏘️ 둘째 돼지 (나무 집)
-    - **JSON name**: "둘째 돼지"
+    ### 2. 🪵 둘째 돼지 (나무 집)
+    - **JSON name**: "🪵 둘째 돼지"
     - **JSON description**: "나무로 적당히 빠르고 튼튼하게 집을 짓습니다."
     - **JSON risk_level**: "중위험 균형형"
     - **특징**: 나무로 적당한 속도와 튼튼함을 갖춘 집을 짓는 전략. 균형 잡힌 접근법.
     - **위험도**: ⭐⭐⭐ (보통)
     - **수익/손실 범위**: 중간 정도의 변동 (예: +5% ~ +10% 성공, -3% ~ -7% 실패)
 
-    ### 3. 🏛️ 셋째 돼지 (벽돌 집)
+    ### 3. 🧱 셋째 돼지 (벽돌 집)
     - **JSON name**: "셋째 돼지"
     - **JSON description**: "벽돌로 가장 천천히, 가장 튼튼하게 집을 짓습니다."
     - **JSON risk_level**: "저위험 저수익"
@@ -555,7 +555,7 @@ def get_game_scenario_prompt4():
         "news_tag": "[뉴스가 어떤 돼지에게 주로 영향을 주는지 - 'all'(모든 돼지), 'high'(고위험), 'mid'(중위험), 'low'(저위험), 또는 빈 문자열]",
         "stocks": [
           {
-            "name": "첫째 돼지",
+            "name": "🌾 첫째 돼지",
             "risk_level": "고위험 고수익",
             "description": "지푸라기로 집을 가장 빠르게 짓습니다.",
             "before_value": 100,
@@ -563,7 +563,7 @@ def get_game_scenario_prompt4():
             "expectation": "[1턴 뉴스 기반의 다음 턴 예상 - 예: 집이 더 튼튼해지고 빨리 지어질 거예요!]"
           },
           {
-            "name": "둘째 돼지",
+            "name": "🪵 둘째 돼지",
             "risk_level": "중위험 균형형",
             "description": "나무로 적당히 빠르고 튼튼하게 집을 짓습니다.",
             "before_value": 100,
@@ -571,7 +571,7 @@ def get_game_scenario_prompt4():
             "expectation": "[1턴 뉴스 기반의 다음 턴 예상 - 예: 집이 더 튼튼해지고 빨리 지어질 거예요!]"
           },
           {
-            "name": "셋째 돼지",
+            "name": "🧱 셋째 돼지",
             "risk_level": "저위험 저수익",
             "description": "벽돌로 가장 천천히, 가장 튼튼하게 집을 짓습니다.",
             "before_value": 100,
@@ -587,7 +587,7 @@ def get_game_scenario_prompt4():
         "news_tag": "[뉴스가 어떤 돼지에게 주로 영향을 주는지]",
         "stocks": [
           {
-            "name": "첫째 돼지",
+            "name": "🌾 첫째 돼지",
             "risk_level": "고위험 고수익",
             "description": "지푸라기로 집을 가장 빠르게 짓습니다.",
             "before_value": 100,
@@ -595,7 +595,7 @@ def get_game_scenario_prompt4():
             "expectation": "[2턴 뉴스 기반 예상 - 예: 집이 약해지거나 다시 지어야 할 수도 있어요.]"
           },
           {
-            "name": "둘째 돼지",
+            "name": "🪵 둘째 돼지",
             "risk_level": "중위험 균형형",
             "description": "나무로 적당히 빠르고 튼튼하게 집을 짓습니다.",
             "before_value": 100,
@@ -603,7 +603,7 @@ def get_game_scenario_prompt4():
             "expectation": "[2턴 뉴스 기반 예상 - 예: 이 소식은 나무집에는 아무런 영향을 주지 않을 거예요.]"
           },
           {
-            "name": "셋째 돼지",
+            "name": "🧱 셋째 돼지",
             "risk_level": "저위험 저수익",
             "description": "벽돌로 가장 천천히, 가장 튼튼하게 집을 짓습니다.",
             "before_value": 100,

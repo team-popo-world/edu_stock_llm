@@ -169,13 +169,13 @@ def show_welcome_screen():
     
     with col2:
         st.markdown("""
-        <div class="card" style="text-align: center; padding: 3rem;">
-            <h2>🎮 게임 방법</h2>
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #dee2e6; border-radius: 15px; padding: 3rem; margin: 1rem 0; text-align: center;">
+            <h2 style="color: #495057; margin-bottom: 1rem;">🎮 게임 방법</h2>
             <br>
             <div style="text-align: left; margin: 2rem 0;">
-                <p>🎯 <strong>목표:</strong> 1000코인으로 시작해서 투자를 통해 돈을 늘려보세요!</p>
-                <p>📰 <strong>방법:</strong> 매 턴마다 나오는 뉴스를 보고 어떤 주식을 살지 결정하세요</p>
-                <p>💡 <strong>팁:</strong> 뉴스를 잘 읽고 힌트를 활용해보세요</p>
+                <p style="margin: 0.5rem 0; color: #495057;">🎯 <strong>목표:</strong> 1000코인으로 시작해서 투자를 통해 돈을 늘려보세요!</p>
+                <p style="margin: 0.5rem 0; color: #495057;">📰 <strong>방법:</strong> 매 턴마다 나오는 뉴스를 보고 어떤 주식을 살지 결정하세요</p>
+                <p style="margin: 0.5rem 0; color: #495057;">💡 <strong>팁:</strong> 뉴스를 잘 읽고 힌트를 활용해보세요</p>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -338,17 +338,17 @@ def display_final_results(investment_history):
         color = "green" if profit >= 0 else "red"
         icon = "📈" if profit >= 0 else "📉"
         st.markdown(f"""
-        <div class="metric-card">
-            <h3 style="color: {color};">{icon} {profit:+.0f}</h3>
-            <p>수익/손실</p>
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #dee2e6; border-radius: 10px; padding: 1rem; margin: 0.5rem 0; text-align: center;">
+            <h3 style="margin: 0 0 0.5rem 0; color: {color};">{icon} {profit:+.0f}</h3>
+            <p style="margin: 0; color: #6c757d; font-size: 0.9rem;">수익/손실</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col3:
         st.markdown(f"""
-        <div class="metric-card">
-            <h3 style="color: {color};">{profit_rate:+.1f}%</h3>
-            <p>수익률</p>
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #dee2e6; border-radius: 10px; padding: 1rem; margin: 0.5rem 0; text-align: center;">
+            <h3 style="margin: 0 0 0.5rem 0; color: {color};">{profit_rate:+.1f}%</h3>
+            <p style="margin: 0; color: #6c757d; font-size: 0.9rem;">수익률</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -611,4 +611,5 @@ def show_data_cleanup_options():
         st.info("저장된 게임 파일을 정리하려면 data/ 폴더를 직접 확인하세요.")
 
 
-# ...existing code...
+if __name__ == "__main__":
+    main()

@@ -92,10 +92,10 @@ def create_simple_stock_plot(game_data, title="🎯 우리의 투자 모험"):
 def create_metric_card(title, value, subtitle=""):
     """메트릭 카드 생성"""
     return f"""
-    <div class="metric-card">
-        <h3>{value}</h3>
-        <p>{title}</p>
-        {f'<small>{subtitle}</small>' if subtitle else ''}
+    <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #dee2e6; border-radius: 10px; padding: 1rem; margin: 0.5rem 0; text-align: center;">
+        <h3 style="margin: 0 0 0.5rem 0; color: #495057;">{value}</h3>
+        <p style="margin: 0; color: #6c757d; font-size: 0.9rem;">{title}</p>
+        {f'<small style="color: #adb5bd;">{subtitle}</small>' if subtitle else ''}
     </div>
     """
 
@@ -104,25 +104,19 @@ def create_news_card(current_turn_data):
     """뉴스 카드 생성 (아동 친화적 버전)"""
     result = current_turn_data.get('result', '결과 정보 없음')
     news = current_turn_data.get('news', '뉴스 정보 없음')
-    hint = current_turn_data.get('news_hint', '힌트 정보 없음')
     
     return f"""
-    <div class="news-card" style="background: linear-gradient(135deg, #FFE5B4 0%, #FFCCCB 100%); border-radius: 15px; padding: 1.5rem; margin: 1rem 0; border: 3px solid #FFA500;">
-        <h3 style="color: #FF6B35; margin-bottom: 1rem;">📢 오늘의 특별한 소식!</h3>
-        <div style="background: white; border-radius: 10px; padding: 1rem; margin: 0.5rem 0; border-left: 4px solid #4CAF50;">
-            <p style="margin: 0; font-size: 16px;"><strong>🎉 무슨 일이 일어났을까요?</strong></p>
-            <p style="margin: 0.5rem 0 0 0; color: #333; font-size: 15px;">{result}</p>
-        </div>
-        <div style="background: white; border-radius: 10px; padding: 1rem; margin: 0.5rem 0; border-left: 4px solid #2196F3;">
-            <p style="margin: 0; font-size: 16px;"><strong>📰 자세한 뉴스:</strong></p>
-            <p style="margin: 0.5rem 0 0 0; color: #333; font-size: 15px;">{news}</p>
-        </div>
-        <div style="background: #FFF9C4; border-radius: 10px; padding: 1rem; margin: 0.5rem 0; border: 2px dashed #FFC107;">
-            <p style="margin: 0; font-size: 16px;"><strong>💡 현명한 투자자를 위한 힌트:</strong></p>
-            <p style="margin: 0.5rem 0 0 0; color: #E65100; font-size: 15px; font-style: italic;">{hint}</p>
-        </div>
+<div style="background: linear-gradient(135deg, #FFE5B4 0%, #FFCCCB 100%); border-radius: 15px; padding: 1.5rem; margin: 1rem 0; border: 2px solid #FFA500;">
+    <h3 style="color: #FF6B35; margin-bottom: 1rem;">📢 오늘의 특별한 소식!</h3>
+    <div style="background: white; border-radius: 10px; padding: 1rem; margin: 0.5rem 0;">
+        <p style="margin: 0; font-size: 16px;"><strong>🎉 무슨 일이 일어났을까요?</strong></p>
+        <p style="margin: 0.5rem 0 0 0; color: #333; font-size: 15px;">{result}</p>
     </div>
-    """
+    <div style="background: white; border-radius: 10px; padding: 1rem; margin: 0.5rem 0;">
+        <p style="margin: 0; font-size: 16px;"><strong>📰 자세한 뉴스:</strong></p>
+        <p style="margin: 0.5rem 0 0 0; color: #333; font-size: 15px;">{news}</p>
+    </div>
+</div>"""
 
 
 def create_stock_card(stock):
@@ -132,6 +126,7 @@ def create_stock_card(stock):
     current_value = stock.get('current_value', 0)
     initial_value = stock.get('initial_value', 100)
     risk_level = stock.get('risk_level', '정보 없음')
+    expectation = stock.get('expectation', '이 투자는 어떨까요? 뉴스와 힌트를 잘 읽어보세요!')
     
     # 가격 변동 계산
     if initial_value > 0:
@@ -166,42 +161,38 @@ def create_stock_card(stock):
             break
     
     return f"""
-    <div class="stock-card" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 3px solid #dee2e6; border-radius: 15px; padding: 1.5rem; margin: 1rem 0; transition: all 0.3s ease; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-            <h4 style="margin: 0; color: #495057; font-size: 18px; font-weight: bold;">🏪 {name}</h4>
-            <span style="margin-left: auto; font-size: 20px; color: {change_color}; font-weight: bold;">
-                {change_icon} {change_text}
-            </span>
-        </div>
-        
-        <p style="color: #6c757d; margin: 0.5rem 0; font-size: 14px; line-height: 1.4;">
-            📝 {description}
-        </p>
-        
-        <div style="background: white; border-radius: 10px; padding: 1rem; margin: 1rem 0; border: 2px solid #e9ecef;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <div style="font-size: 24px; font-weight: bold; color: #212529;">
-                        💰 {current_value} 코인
-                    </div>
-                    <small style="color: #6c757d;">지금 가격</small>
+<div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #dee2e6; border-radius: 15px; padding: 1.5rem; margin: 1rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+        <h4 style="margin: 0; color: #495057; font-size: 18px; font-weight: bold;">{name}</h4>
+        <span style="margin-left: auto; font-size: 18px; color: {change_color}; font-weight: bold;">
+            {change_icon} {change_text}
+        </span>
+    </div>
+    <p style="color: #6c757d; margin: 0.5rem 0; font-size: 14px;">
+        📝 {description}
+    </p>
+    <div style="background: white; border-radius: 10px; padding: 1rem; margin: 1rem 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <div style="font-size: 22px; font-weight: bold; color: #212529;">
+                    💰 {current_value} 코인
                 </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 14px; color: #495057;">
-                        {risk_icon} <strong>{risk_level}</strong>
-                    </div>
-                    <small style="color: #6c757d;">처음 가격: {initial_value} 코인</small>
+                <small style="color: #6c757d;">지금 가격</small>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 14px; color: #495057;">
+                    {risk_icon} <strong>{risk_level}</strong>
                 </div>
+                <small style="color: #6c757d;">처음 가격: {initial_value} 코인</small>
             </div>
         </div>
-        
-        <div style="background: #e3f2fd; border-radius: 8px; padding: 0.8rem; margin-top: 1rem; border-left: 4px solid #2196F3;">
-            <small style="color: #1565C0; font-weight: 500;">
-                💭 이 투자는 어떨까요? 뉴스와 힌트를 잘 읽어보세요!
-            </small>
-        </div>
     </div>
-    """
+    <div style="background: #e3f2fd; border-radius: 8px; padding: 0.8rem; margin-top: 1rem;">
+        <small style="color: #1565C0; font-weight: 500;">
+            💭 {expectation}
+        </small>
+    </div>
+</div>"""
 
 
 def create_investment_history_chart(investment_history):
@@ -295,13 +286,13 @@ def display_api_key_warning():
 def display_game_intro():
     """게임 소개 카드"""
     return """
-    <div class="card" style="text-align: center; padding: 3rem;">
-        <h2>🎮 게임 방법</h2>
+    <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 2px solid #dee2e6; border-radius: 15px; padding: 3rem; margin: 1rem 0; text-align: center;">
+        <h2 style="color: #495057; margin-bottom: 1rem;">🎮 게임 방법</h2>
         <br>
         <div style="text-align: left; margin: 2rem 0;">
-            <p>🎯 <strong>목표:</strong> 1000코인으로 시작해서 투자를 통해 돈을 늘려보세요!</p>
-            <p>📰 <strong>방법:</strong> 매 턴마다 나오는 뉴스를 보고 어떤 주식을 살지 결정하세요</p>
-            <p>💡 <strong>팁:</strong> 뉴스를 잘 읽고 힌트를 활용해보세요</p>
+            <p style="margin: 0.5rem 0; color: #495057;">🎯 <strong>목표:</strong> 1000코인으로 시작해서 투자를 통해 돈을 늘려보세요!</p>
+            <p style="margin: 0.5rem 0; color: #495057;">📰 <strong>방법:</strong> 매 턴마다 나오는 뉴스를 보고 어떤 주식을 살지 결정하세요</p>
+            <p style="margin: 0.5rem 0; color: #495057;">💡 <strong>팁:</strong> 뉴스를 잘 읽고 힌트를 활용해보세요</p>
         </div>
         <br>
     </div>
