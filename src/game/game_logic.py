@@ -1,10 +1,10 @@
-
 import streamlit as st
 import json
 import os
 from src.models.llm_handler import initialize_llm, create_prompt_template, generate_game_data
 from src.utils.prompts import get_system_prompt, get_game_scenario_prompt
 from src.utils.file_manager import save_scenario_to_file, generate_filename
+from src.game.session_manager import update_player_action, get_mentor_advice
 
 
 @st.cache_data(ttl=3600)
@@ -89,7 +89,21 @@ def process_investment(investment_inputs, current_turn_data, turn_number):
                 st.session_state.player_investments[stock_name] = current_shares + shares_change
                 
                 action_type = "매수" if shares_change > 0 else "매도"
+                action_type_en = "buy" if shares_change > 0 else "sell"
                 actions.append(f"{stock_name} {abs(shares_change)}주 {action_type}")
+                
+                # AI 멘토에게 행동 기록
+                update_player_action(
+                    action_type_en, 
+                    stock_name, 
+                    abs(shares_change), 
+                    stock_info['current_value'], 
+                    turn_number
+                )
+    
+    # 변화가 없는 경우 hold 액션 기록
+    if not actions:
+        update_player_action("hold", "none", 0, 0, turn_number)
     
     if actions:
         st.success(f"✅ 투자 완료: {', '.join(actions)}")

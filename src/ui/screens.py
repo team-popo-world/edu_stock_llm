@@ -3,14 +3,17 @@ import streamlit as st
 import os
 from src.ui.components import (
     create_metric_card, create_news_card, create_stock_card, 
-    display_api_key_warning, display_game_intro, create_investment_history_chart
+    display_api_key_warning, display_game_intro, create_investment_history_chart,
+    create_mentor_advice_card, create_learning_progress_card, 
+    create_mentor_toggle, show_mentor_advice_button
 )
 from src.game.game_logic import (
     generate_game_scenario_data_llm, process_investment, 
     initialize_new_game, reset_game_state, calculate_total_assets
 )
 from src.game.session_manager import (
-    get_session_value, set_session_value, get_current_turn_data, advance_turn
+    get_session_value, set_session_value, get_current_turn_data, advance_turn,
+    initialize_mentor_agent, get_mentor_advice, save_player_progress
 )
 from src.utils.file_manager import (
     SCENARIO_TYPES, get_available_scenarios, load_scenario_from_file, DATA_DIR
@@ -108,6 +111,9 @@ def _handle_setup_button_click(game_mode, selected_theme, selected_file):
 
 def show_game_screen():
     """게임 화면 - 깔끔하고 직관적"""
+    # AI 멘토 초기화
+    initialize_mentor_agent()
+    
     game_data = get_session_value('game_data')
     if not game_data:
         st.error("게임 데이터가 없습니다.")
@@ -126,8 +132,31 @@ def show_game_screen():
     
     turn_number = current_turn_data.get('turn', get_session_value('current_turn_index', 0) + 1)
     
+    # AI 멘토 토글 (사이드바)
+    with st.sidebar:
+        create_mentor_toggle()
+        
+        # 플레이어 프로필 표시
+        player_profile = get_session_value('player_profile')
+        if player_profile:
+            create_learning_progress_card(player_profile)
+    
     # 상단 정보 표시
     _display_game_status(turn_number, len(game_data), current_turn_data)
+    
+    # AI 멘토 조언 표시
+    if get_session_value('mentor_enabled', True):
+        player_investments = get_session_value('player_investments', {})
+        player_balance = get_session_value('player_balance', 1000)
+        
+        mentor_data = get_mentor_advice(
+            current_turn_data, player_investments, player_balance, turn_number
+        )
+        
+        if mentor_data:
+            create_mentor_advice_card(mentor_data)
+        else:
+            show_mentor_advice_button()
     
     # 뉴스 카드
     st.markdown(create_news_card(current_turn_data), unsafe_allow_html=True)
@@ -182,6 +211,22 @@ def _display_investment_form(current_turn_data, turn_number):
         # 투자 실행 버튼
         if st.form_submit_button("💼 투자 실행", use_container_width=True):
             if process_investment(investment_inputs, current_turn_data, turn_number):
+                # AI 멘토에게 플레이어 행동 업데이트
+                if get_session_value('mentor_enabled', True):
+                    for stock_name, shares in investment_inputs.items():
+                        if shares != 0:  # 실제 거래가 있었을 때만
+                            stock_info = next((s for s in current_turn_data['stocks'] if s['name'] == stock_name), None)
+                            if stock_info:
+                                action_type = "buy" if shares > 0 else "sell" if shares < 0 else "hold"
+                                from src.game.session_manager import update_player_action
+                                update_player_action(
+                                    action_type, stock_name, abs(shares), 
+                                    stock_info['current_value'], turn_number
+                                )
+                    
+                    # 진행상황 저장
+                    save_player_progress()
+                
                 advance_turn()
                 st.rerun()
 
@@ -194,6 +239,41 @@ def show_result_screen():
     if not investment_history:
         _show_error_result()
         return
+    
+    # AI 멘토의 최종 분석
+    if get_session_value('mentor_enabled', True):
+        player_profile = get_session_value('player_profile')
+        if player_profile:
+            st.markdown("### 🤖 AI 멘토의 최종 분석")
+            
+            # 게임 완료 후 프로필 업데이트
+            player_profile.games_played += 1
+            insights = player_profile.get_learning_insights()
+            
+            if insights:
+                insights_style = """
+                    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                    padding: 20px;
+                    border-radius: 15px;
+                    color: white;
+                    margin: 10px 0;
+                """
+                
+                st.markdown(f"""
+                <div style="{insights_style}">
+                    <h4 style="margin: 0 0 10px 0; color: white;">📈 이번 게임에서 배운 것들</h4>
+                """, unsafe_allow_html=True)
+                
+                for key, advice in insights.items():
+                    st.markdown(f"<p style='margin: 5px 0; font-size: 1.1em;'>• {advice}</p>", unsafe_allow_html=True)
+                
+                st.markdown("</div>", unsafe_allow_html=True)
+            
+            # 학습 진도 표시
+            create_learning_progress_card(player_profile)
+            
+            # 진행상황 저장
+            save_player_progress()
     
     _display_final_results(investment_history)
     _display_investment_chart(investment_history)

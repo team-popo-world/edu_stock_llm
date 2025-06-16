@@ -1,4 +1,3 @@
-
 import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
@@ -297,3 +296,192 @@ def display_game_intro():
         <br>
     </div>
     """
+
+
+def create_mentor_advice_card(mentor_data):
+    """AI 멘토 조언 카드 생성"""
+    if not mentor_data or not mentor_data.get('advice'):
+        return
+    
+    advice = mentor_data['advice']
+    analysis = mentor_data.get('analysis', {})
+    
+    # 멘토 카드 스타일
+    mentor_card_style = """
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        border-radius: 15px;
+        border: 2px solid #e1e8ed;
+        margin: 10px 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        color: white;
+    """
+    
+    with st.container():
+        st.markdown(f"""
+        <div style="{mentor_card_style}">
+            <h3 style="margin: 0; color: white; font-size: 1.2em;">
+                🤖 AI 투자 멘토의 조언
+            </h3>
+            <p style="margin: 10px 0 0 0; font-size: 1.1em; line-height: 1.5;">
+                {advice.get('main_message', '계속해서 좋은 투자를 해보세요!')}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 상세 분석 정보 (접을 수 있는 형태)
+        with st.expander("📊 상세 분석 보기", expanded=False):
+            if analysis.get('portfolio'):
+                portfolio = analysis['portfolio']
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.metric("💰 총 자산", f"{portfolio.get('total_assets', 0):.0f}코인")
+                    st.metric("📈 투자 비율", f"{portfolio.get('investment_ratio', 0):.1f}%")
+                
+                with col2:
+                    st.metric("💵 현금", f"{portfolio.get('cash_balance', 0):.0f}코인")
+                    st.metric("🏪 투자 가치", f"{portfolio.get('investment_value', 0):.0f}코인")
+            
+            if advice.get('tips'):
+                st.write("💡 **맞춤형 팁:**")
+                for tip in advice['tips']:
+                    st.write(f"• {tip}")
+
+
+def create_learning_progress_card(player_profile):
+    """학습 진도 카드 생성"""
+    if not player_profile:
+        return
+    
+    progress_style = """
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        padding: 15px;
+        border-radius: 12px;
+        margin: 10px 0;
+        color: white;
+    """
+    
+    with st.container():
+        st.markdown(f"""
+        <div style="{progress_style}">
+            <h4 style="margin: 0; color: white;">📚 나의 학습 현황</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("🎮 플레이한 게임", player_profile.games_played)
+        
+        with col2:
+            st.metric("🎯 총 턴 수", player_profile.total_turns_played)
+        
+        with col3:
+            learning_style_emoji = {
+                "visual": "👀",
+                "auditory": "👂", 
+                "hands_on": "✋",
+                "analytical": "🧠",
+                "exploring": "🔍"
+            }
+            style_emoji = learning_style_emoji.get(player_profile.learning_style.value, "🔍")
+            st.metric("📖 학습 스타일", f"{style_emoji} {player_profile.learning_style.value}")
+        
+        # 강점과 개선점
+        if player_profile.strengths or player_profile.areas_for_improvement:
+            with st.expander("🎯 나의 강점과 개선점"):
+                if player_profile.strengths:
+                    st.write("💪 **강점:**")
+                    for strength in player_profile.strengths:
+                        st.write(f"• {strength}")
+                
+                if player_profile.areas_for_improvement:
+                    st.write("📈 **개선할 점:**")
+                    for area in player_profile.areas_for_improvement:
+                        st.write(f"• {area}")
+
+
+def create_mentor_toggle():
+    """AI 멘토 켜기/끄기 토글"""
+    mentor_enabled = st.session_state.get('mentor_enabled', True)
+    
+    new_state = st.toggle(
+        "🤖 AI 멘토 활성화", 
+        value=mentor_enabled,
+        help="AI 멘토가 투자 조언을 제공합니다"
+    )
+    
+    if new_state != mentor_enabled:
+        st.session_state.mentor_enabled = new_state
+        if new_state:
+            st.success("AI 멘토가 활성화되었습니다!")
+        else:
+            st.info("AI 멘토가 비활성화되었습니다.")
+        st.rerun()
+
+
+def show_mentor_advice_button():
+    """멘토 조언 보기 버튼"""
+    if st.session_state.get('mentor_enabled', True):
+        if st.button("🤖 AI 멘토 조언 보기", type="secondary"):
+            st.session_state.show_mentor_advice = True
+            st.rerun()
+
+
+def create_learning_progress_chart(player_profile):
+    """학습 진도 차트"""
+    if not player_profile or not player_profile.decision_patterns:
+        return
+    
+    # 학습 영역별 점수 계산
+    learning_areas = {
+        "위험 관리": min(100, (1.0 - abs(player_profile.decision_patterns.get("risk_taking", 0.5) - 0.3)) * 100),
+        "분산 투자": player_profile.consistency_score * 100,
+        "시장 분석": min(100, player_profile.decision_patterns.get("buy_frequency", 0) * 200),
+        "감정 조절": min(100, (1.0 - player_profile.decision_patterns.get("hold_frequency", 0.3)) * 150)
+    }
+    
+    fig = go.Figure()
+    
+    fig.add_trace(go.Scatterpolar(
+        r=list(learning_areas.values()),
+        theta=list(learning_areas.keys()),
+        fill='toself',
+        name='현재 수준',
+        line_color='rgb(102, 126, 234)'
+    ))
+    
+    fig.update_layout(
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                range=[0, 100]
+            )),
+        showlegend=False,
+        title="📚 나의 투자 학습 진도",
+        height=400
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+
+
+def create_encouragement_banner(message):
+    """격려 메시지 배너"""
+    banner_style = """
+    background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 15px 0;
+    animation: pulse 2s infinite;
+    """
+    
+    st.markdown(f"""
+    <div style="{banner_style}">
+        {message}
+    </div>
+    """, unsafe_allow_html=True)

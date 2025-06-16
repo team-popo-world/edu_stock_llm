@@ -21,8 +21,10 @@ sys.path.insert(0, parent_dir)
 from src.utils.config import load_api_key
 from src.utils.file_manager import SCENARIO_TYPES, get_available_scenarios, load_scenario_from_file, DATA_DIR
 from src.game.game_logic import generate_game_scenario_data_llm, initialize_new_game, reset_game_state, calculate_total_assets, process_investment
-from src.game.session_manager import get_current_turn_data, advance_turn
-from src.ui.components import create_metric_card, create_news_card, create_stock_card, create_investment_history_chart
+from src.game.session_manager import get_current_turn_data, advance_turn, initialize_mentor_agent, get_mentor_advice, save_player_progress
+from src.ui.components import (create_metric_card, create_news_card, create_stock_card, create_investment_history_chart,
+                              create_mentor_advice_card, create_learning_progress_card, create_mentor_toggle,
+                              show_mentor_advice_button)
 import plotly.graph_objects as go
 
 
@@ -214,14 +216,15 @@ def handle_setup_button(game_mode, selected_theme, selected_file):
 
 def show_game_screen():
     """게임 화면"""
-    if not st.session_state.game_data:
-        st.error("게임 데이터가 없습니다.")
-        return
+    # AI 멘토 초기화
+    initialize_mentor_agent()
+    
+    # AI 멘토 토글 (사이드바)
+    create_mentor_toggle()
     
     current_turn_data = get_current_turn_data()
     if not current_turn_data:
-        st.session_state.current_step = 'result'
-        st.rerun()
+        st.error("게임 데이터를 불러올 수 없어요")
         return
     
     # 턴 데이터 유효성 검사
@@ -236,6 +239,24 @@ def show_game_screen():
     
     # 뉴스 카드
     st.markdown(create_news_card(current_turn_data), unsafe_allow_html=True)
+    
+    # AI 멘토 조언 (메인 화면)
+    if st.session_state.get('mentor_enabled', True):
+        turn_number = st.session_state.get('current_turn_index', 0) + 1
+        mentor_data = get_mentor_advice(
+            current_turn_data,
+            st.session_state.player_investments,
+            st.session_state.player_balance,
+            turn_number
+        )
+        
+        if mentor_data and st.session_state.get('show_mentor_advice', False):
+            create_mentor_advice_card(mentor_data)
+        
+        # 플레이어 프로필 요약 (사이드바)
+        if st.session_state.get('player_profile'):
+            with st.sidebar:
+                create_learning_progress_card(st.session_state.player_profile)
     
     # 투자 폼
     display_investment_form(current_turn_data, turn_number)
@@ -537,25 +558,6 @@ def show_game_history():
     
     investment_history = st.session_state.get('investment_history', [])
     game_log = st.session_state.get('game_log', [])
-    
-    if investment_history:
-        st.markdown("**투자 기록:**")
-        for i, record in enumerate(investment_history, 1):
-            with st.expander(f"턴 {i} - 총 자산: {record.get('total_asset_value', 0):.0f}"):
-                st.json(record)
-    
-    if game_log:
-        st.markdown("**게임 로그:**")
-        for log_entry in game_log[-5:]:  # 최근 5개만 표시
-            st.text(log_entry)
-
-
-def save_current_game():
-    """현재 게임 저장"""
-    if not st.session_state.game_data:
-        st.warning("저장할 게임 데이터가 없습니다.")
-        return
-    
     try:
         from datetime import datetime
         import json
