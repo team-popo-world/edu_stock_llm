@@ -14,7 +14,9 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from src.utils.config import load_api_key, get_model_settings
+from src.utils.config import load_api_key, get_model_settings, config
+from src.utils.logger import log_error, log_warning, log_info
+from src.utils.validators import InputValidator, ValidationError, validate_game_data
 from src.utils.prompts import get_system_prompt, get_game_scenario_prompt
 from src.models.llm_handler import initialize_llm, create_prompt_template, generate_game_data
 from src.data.data_handler import parse_json_data, save_game_data, load_game_data, create_sample_game_data
@@ -27,11 +29,13 @@ app = FastAPI(
 )
 
 # CORS 미들웨어 설정 - 프론트엔드가 API에 접근할 수 있도록 함
+# 환경 변수로 허용된 출처를 설정할 수 있습니다
+allowed_origins = config.allowed_origins.split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 실제 운영 환경에서는 특정 출처만 허용하는 것이 좋습니다
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -66,10 +70,14 @@ async def generate_new_scenario(params: Optional[ScenarioParameters] = None):
     생성된 시나리오는 'data' 디렉토리에 저장됩니다.
     """
     try:
-        # 시나리오 타입 결정
+        # 시나리오 타입 결정 및 검증
         scenario_type = "magic_kingdom"  # 기본값
         if params and params.scenario_type:
-            scenario_type = params.scenario_type
+            try:
+                scenario_type = InputValidator.validate_scenario_type(params.scenario_type)
+            except ValidationError as e:
+                log_error(f"Invalid scenario type: {params.scenario_type}", e)
+                raise HTTPException(status_code=400, detail=str(e))
         
         llm = initialize_llm()
         system_prompt = get_system_prompt()
@@ -81,7 +89,15 @@ async def generate_new_scenario(params: Optional[ScenarioParameters] = None):
         game_data = parse_json_data(json_content)
 
         if game_data is None:
+            log_error("LLM failed to generate valid scenario data")
             raise HTTPException(status_code=500, detail="LLM으로부터 유효한 시나리오 데이터를 생성하지 못했습니다.")
+        
+        # 생성된 데이터 검증
+        try:
+            game_data = validate_game_data(game_data)
+        except ValidationError as e:
+            log_error(f"Generated game data validation failed: {e}")
+            raise HTTPException(status_code=500, detail=f"생성된 게임 데이터가 유효하지 않습니다: {str(e)}")
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_filename = f"game_scenario_{scenario_type}_{timestamp}.json"
@@ -89,9 +105,14 @@ async def generate_new_scenario(params: Optional[ScenarioParameters] = None):
         
         return {"scenario_id": output_filename, "scenario_type": scenario_type, "data": game_data}
 
+    except HTTPException:
+        raise
+    except ValidationError as e:
+        log_error(f"Validation error during scenario generation: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        # 실제 운영 환경에서는 더 구체적인 오류 처리 및 로깅이 필요합니다.
-        raise HTTPException(status_code=500, detail=f"시나리오 생성 중 오류 발생: {str(e)}")
+        log_error(f"Unexpected error during scenario generation: {e}", e)
+        raise HTTPException(status_code=500, detail="시나리오 생성 중 예상치 못한 오류가 발생했습니다.")
 
 @app.get("/scenario/{scenario_id}", summary="특정 게임 시나리오 조회", response_model=Dict[str, Any])
 async def get_scenario_by_id(scenario_id: str = Path(..., description="조회할 시나리오의 파일명 (예: game_scenario_20250520_153342.json)")):
@@ -99,32 +120,64 @@ async def get_scenario_by_id(scenario_id: str = Path(..., description="조회할
     저장된 게임 시나리오를 ID(파일명)를 통해 조회합니다.
     """
     file_path = os.path.join(BASE_DATA_DIR, scenario_id)
-    if not scenario_id.endswith(".json"): # 간단한 유효성 검사
+    # 파일 경로 검증
+    try:
+        scenario_id = InputValidator.validate_file_path(scenario_id, must_exist=False)
+    except ValidationError as e:
+        log_error(f"Invalid scenario ID: {scenario_id}", e)
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    if not scenario_id.endswith(".json"):
         file_path_with_ext = f"{file_path}.json"
         if os.path.exists(file_path_with_ext):
             file_path = file_path_with_ext
-        else: # 확장자 없이도 파일이 없다면 원래 경로로 진행하여 에러 처리
+        else:
              pass
 
 
-    game_data = load_game_data(file_path)
-    if game_data is None:
-        raise HTTPException(status_code=404, detail=f"시나리오 '{scenario_id}'를 찾을 수 없습니다.")
-    return {"scenario_id": scenario_id, "data": game_data}
+    try:
+        game_data = load_game_data(file_path)
+        if game_data is None:
+            log_warning(f"Scenario not found: {scenario_id}")
+            raise HTTPException(status_code=404, detail=f"시나리오 '{scenario_id}'를 찾을 수 없습니다.")
+        
+        log_info(f"Successfully loaded scenario: {scenario_id}")
+        return {"scenario_id": scenario_id, "data": game_data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        log_error(f"Error loading scenario {scenario_id}: {e}", e)
+        raise HTTPException(status_code=500, detail="시나리오 로딩 중 오류가 발생했습니다.")
 
 @app.post("/simulation/run_automated", summary="자동 투자 시뮬레이션 실행", response_model=SimulationResponse)
 async def run_automated_investment_simulation(request: SimulationRequest):
     """
     주어진 시나리오 ID와 전략들을 사용하여 자동 투자 시뮬레이션을 실행하고 결과를 반환합니다.
     """
-    scenario_file_path = os.path.join(BASE_DATA_DIR, request.scenario_id)
-    game_data = load_game_data(scenario_file_path)
+    try:
+        # 요청 데이터 검증
+        scenario_id = InputValidator.validate_file_path(request.scenario_id, must_exist=False)
+        strategies = InputValidator.validate_strategies(request.strategies)
+        
+        scenario_file_path = os.path.join(BASE_DATA_DIR, scenario_id)
+        game_data = load_game_data(scenario_file_path)
 
-    if game_data is None:
-        raise HTTPException(status_code=404, detail=f"시뮬레이션을 위한 시나리오 '{request.scenario_id}'를 찾을 수 없습니다.")
+        if game_data is None:
+            log_warning(f"Scenario not found for simulation: {scenario_id}")
+            raise HTTPException(status_code=404, detail=f"시뮬레이션을 위한 시나리오 '{scenario_id}'를 찾을 수 없습니다.")
+        
+        log_info(f"Starting simulation for scenario: {scenario_id} with strategies: {strategies}")
+    except ValidationError as e:
+        log_error(f"Validation error in simulation request: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        log_error(f"Error preparing simulation: {e}", e)
+        raise HTTPException(status_code=500, detail="시뮬레이션 준비 중 오류가 발생했습니다.")
 
     simulation_results: Dict[str, Optional[SimulationResultItem]] = {}
-    for strategy in request.strategies:
+    for strategy in strategies:
         try:
             # run_automated_simulation 함수가 반환하는 값의 형태에 따라 result 처리
             raw_result = run_automated_simulation(game_data, strategy) # 기존 함수 호출
@@ -137,7 +190,7 @@ async def run_automated_investment_simulation(request: SimulationRequest):
                 simulation_results[strategy] = None # 혹은 오류 처리
         except Exception as e:
             # 개별 전략 실행 오류 처리
-            print(f"전략 '{strategy}' 실행 중 오류: {e}") # 로깅
+            log_error(f"Strategy '{strategy}' execution failed: {e}", e)
             simulation_results[strategy] = None
 
 
@@ -151,12 +204,17 @@ async def run_automated_investment_simulation(request: SimulationRequest):
              best_profit = valid_results[best_strategy_name].profit_rate
 
 
-    return SimulationResponse(
-        scenario_id=request.scenario_id,
-        results=simulation_results,
-        best_strategy=best_strategy_name,
-        best_profit_rate=best_profit
-    )
+    try:
+        log_info(f"Simulation completed for scenario: {scenario_id}. Best strategy: {best_strategy_name}")
+        return SimulationResponse(
+            scenario_id=scenario_id,
+            results=simulation_results,
+            best_strategy=best_strategy_name,
+            best_profit_rate=best_profit
+        )
+    except Exception as e:
+        log_error(f"Error creating simulation response: {e}", e)
+        raise HTTPException(status_code=500, detail="시뮬레이션 결과 생성 중 오류가 발생했습니다.")
 
 @app.get("/scenario-types", summary="사용 가능한 시나리오 타입 조회", response_model=Dict[str, Any])
 async def get_scenario_types():
