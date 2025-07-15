@@ -378,7 +378,6 @@ def display_final_results(investment_history):
     
     # 교육적 피드백 추가
     display_educational_feedback()
-    display_educational_feedback()
 
 
 def display_performance_message(profit):
